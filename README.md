@@ -28,37 +28,15 @@ Emrys aims to be the kind of AI assistant portrayed in science fiction—capable
 - **Mac Mini** (M1/M2/M3 recommended for optimal AI performance)
   - Minimum 16GB RAM (32GB+ recommended)
   - 100GB+ free storage for AI models
-- Dedicated to running Emrys (not your primary work machine)
+- Dedicated exclusively to Emrys, like you'd set up a computer for a human assistant with its own credentials and accounts
 
 ### Software
 - **macOS** 12.0 (Monterey) or later
-- **Homebrew** for package management
-- **Python** 3.10 or later
-- **Node.js** 18 or later (for browser automation)
+- **nix-darwin** for system configuration and package management
 
 ## Installation
 
 > **Note:** Emrys is currently in early development. Full installation instructions will be provided as the project matures.
-
-### Quick Start (Coming Soon)
-
-```bash
-# Clone the repository
-git clone https://github.com/anicolao/emrys.git
-cd emrys
-
-# Install dependencies
-./scripts/install.sh
-
-# Download AI models
-./scripts/download-models.sh
-
-# Configure your assistant
-./scripts/configure.sh
-
-# Start Emrys
-./emrys start
-```
 
 ## Architecture
 
@@ -69,17 +47,17 @@ Emrys consists of several key components:
 - **System Interface**: Terminal, AppleScript, and system API access
 - **Browser Automation**: Playwright-based web interaction
 - **Knowledge Base**: Local document indexing and retrieval
-- **Interface**: CLI, web UI, and voice interaction (planned)
+- **Interface**: Internet-based communication (FaceTime, Messages, Email) - Emrys operates as a separate entity
 
 ## Usage Examples
 
 Once installed, Emrys can help with tasks like:
 
 ```
-"Check my email and summarize anything urgent"
+"Check my email and summarize anything urgent" (if you've given Emrys access)
 "Schedule a meeting with John next week"
 "Research the best price for a Mac Studio"
-"Organize my downloads folder"
+"Organize my downloads folder" (if you've shared it with Emrys)
 "Monitor system resources and alert me if anything unusual happens"
 "Write a Python script to parse these log files"
 ```
@@ -114,10 +92,10 @@ Emrys takes privacy and security seriously:
 - ✅ All AI processing happens locally—no data sent to external servers
 - ✅ Open source and auditable
 - ✅ You maintain complete control over your data
-- ✅ Explicit confirmation required for destructive actions
+- ⚠️ **Be cautious**: If you share access with Emrys, it has control and could potentially destroy it
 - ✅ Comprehensive logging of all assistant actions
 
-**Note:** While Emrys runs locally, it can access the internet on your behalf (for web research, email, etc.) if you configure it to do so. Always review and understand the permissions you grant.
+**Note:** Emrys operates as its own entity with its own internet accounts and credentials (not your personal accounts). Only share access to resources you're comfortable having Emrys manage.
 
 ## License
 
@@ -149,8 +127,8 @@ This means:
 
 ## Disclaimer
 
-Emrys is experimental software. It has the ability to execute commands and control your Mac. Use it at your own risk, preferably on a dedicated machine. Always review what your assistant is doing and maintain appropriate backups.
+Emrys is experimental software. It has the ability to execute commands and control its Mac. Use it at your own risk, always on a dedicated machine. Always review what your assistant is doing and maintain appropriate backups.
 
 ---
 
-*"Any sufficiently advanced technology is indistinguishable from magic."* — Arthur C. Clarke
+*"Any sufficiently advanced technology is indistinguishable from magic."* — from a human [sic]
