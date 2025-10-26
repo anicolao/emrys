@@ -64,13 +64,13 @@ Remote access to Emrys is accomplished through standard SSH and terminal multipl
 
 The first iteration of Emrys will demonstrate core capabilities through two primary tasks:
 
-#### Goal 1: Self-Bootstrap via Nix Installation
+#### Goal 1: Self-Bootstrap via Nix-Darwin Installation
 - **Objective**: Prove Emrys can modify its own system environment
 - **Tasks**:
   - Detect current macOS environment
-  - Download and install the Nix package manager
+  - Download and install Nix and nix-darwin
   - Verify Nix installation and basic functionality
-  - Configure Nix for optimal macOS usage
+  - Configure nix-darwin for system control
   
 - **Technical Requirements**:
   - Shell command execution capability
@@ -78,19 +78,21 @@ The first iteration of Emrys will demonstrate core capabilities through two prim
   - Environment variable handling
   - Post-installation verification
 
-#### Goal 2: Package Management via Nix
-- **Objective**: Demonstrate controlled software installation
+#### Goal 2: System Configuration via Nix-Darwin
+- **Objective**: Demonstrate controlled system configuration and software management
 - **Tasks**:
-  - Use Nix to install basic utilities
-  - Manage package profiles
-  - Update and maintain installed software
+  - Write nix-darwin configuration files to define system state
+  - Use configuration to install and manage system packages
+  - Apply declarative system settings and preferences
+  - Update and maintain system configuration
   - Clean up unused packages
 
 - **Technical Requirements**:
-  - Nix command orchestration
+  - Configuration file generation and management
+  - nix-darwin command orchestration (darwin-rebuild)
   - Package search and selection
-  - Installation monitoring and verification
-  - Rollback capabilities
+  - System state monitoring and verification
+  - Configuration rollback capabilities
 
 #### Goal 3: Web Browser Access via ChatGPT Atlas
 - **Objective**: Prove Emrys can interact with the web using an AI-enhanced browser
@@ -345,32 +347,6 @@ The initial design succeeds when:
 8. **AI-Assisted Browsing**: Atlas's ChatGPT integration enhances web interaction capabilities
 9. **Logging**: All operations are logged and visible in the TUI
 10. **Security**: SSH access is properly secured with key-based authentication
-
-## Future Considerations
-
-While not part of the initial design, these considerations inform architectural decisions:
-
-### Scalability:
-- Support for multiple agent instances
-- Distributed task execution
-- Cloud sync for configuration and logs (optional)
-
-### Extensibility:
-- Plugin system for custom tools
-- Integration API for third-party services
-- Custom model fine-tuning support
-
-### User Experience:
-- Voice interaction capabilities
-- Natural language command interface
-- Customizable themes and layouts
-- Mobile SSH client support for on-the-go access
-
-### Advanced Features:
-- Scheduled task execution
-- Event-driven automation
-- Multi-modal interactions (text, images, audio)
-- Collaborative features (multiple users working with same agent)
 
 ## Conclusion
 
