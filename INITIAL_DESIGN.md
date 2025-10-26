@@ -2,21 +2,21 @@
 
 ## Overview
 
-Emrys will be built as a Go-based console application with a Terminal User Interface (TUI) using the [Bubbletea](https://github.com/charmbracelet/bubbletea) framework. The TUI will be accessible both locally and via the web through a browser-based interface powered by [xterm.js](https://xtermjs.org/), providing both read-only monitoring and active interaction modes.
+Emrys will be built as a Go-based console application with a Terminal User Interface (TUI) using the [Bubbletea](https://github.com/charmbracelet/bubbletea) framework. The TUI will run in a screen or tmux session on the dedicated Mac Mini, accessible remotely via SSH. This provides both local console access and remote monitoring/control through standard terminal multiplexing tools.
 
 ## Architecture
 
 ### 1. Core Application Layer (Go)
 
-The core of Emrys is a Go application that serves dual purposes:
-- Runs the TUI console interface locally
-- Provides web server functionality for remote access
+The core of Emrys is a Go application that provides:
+- TUI console interface using Bubbletea
+- Runs persistently in a screen/tmux session
+- Agent orchestration and task execution
 
 #### Components:
 - **Main Application**: Entry point and lifecycle management
 - **TUI Engine**: Bubbletea-based interactive terminal interface
-- **Web Server**: HTTP(S) server for browser-based access
-- **PTY Manager**: Pseudo-terminal allocation and management for web sessions
+- **Session Manager**: Integration with screen/tmux for persistence
 - **Agent Core**: AI agent orchestration and task execution
 - **Tool Registry**: Available system tools and capabilities
 
@@ -37,41 +37,30 @@ The TUI provides a rich console interface for interacting with Emrys:
 - Responsive layout that adapts to terminal size
 - Clear visual hierarchy using colors and formatting
 
-### 3. Web Interface Layer
+### 3. Remote Access via SSH
 
-The web interface makes the TUI accessible through a browser, enabling remote monitoring and control.
+Remote access to Emrys is accomplished through standard SSH and terminal multiplexing:
 
 #### Architecture:
-- **HTTP Server**: Serves static frontend assets and WebSocket connections
-- **WebSocket Handler**: Bidirectional communication between browser and TUI
-- **Session Manager**: Handles multiple concurrent connections
-- **Authentication Middleware**: Secures access to the interface
-- **Mode Controller**: Manages read-only vs. active access permissions
+- **SSH Server**: macOS built-in SSH server for secure remote access
+- **Terminal Multiplexer**: screen or tmux session hosting the Emrys TUI
+- **Session Persistence**: TUI remains running even when disconnected
+- **Multi-User Support**: Multiple users can attach to view (read-only via screen/tmux options)
 
-#### Frontend Stack:
-- **xterm.js**: Terminal emulator rendering in the browser
-- **WebSocket**: Real-time communication with the Go backend
-- **Static HTML/CSS/JS**: Minimal frontend dependencies
+#### Access Patterns:
+- **Local Access**: Direct execution on the Mac Mini console
+- **Remote Interactive**: SSH into Mac Mini and attach to the session
+- **Remote Monitoring**: SSH with read-only attachment to observe activity
+- **Detached Operation**: TUI continues running when no users are attached
 
-### 4. Access Modes
+#### Benefits:
+- Standard, well-understood SSH security model
+- No custom web infrastructure to maintain
+- Native terminal experience with full color and formatting support
+- Leverages existing screen/tmux capabilities for session management
+- Simple firewall configuration (SSH port only)
 
-The system supports two distinct modes of web access:
-
-#### Read-Only Mode:
-- View TUI output and system status
-- Monitor agent activities and logs
-- No command input or control capabilities
-- Multiple simultaneous read-only viewers permitted
-- Ideal for monitoring dashboards or status screens
-
-#### Active Mode:
-- Full interactive access to the TUI
-- Execute commands and interact with the agent
-- Exclusive session (single active user at a time)
-- Complete control over agent operations
-- Requires elevated authentication
-
-### 5. Initial Capability Goals
+### 4. Initial Capability Goals
 
 The first iteration of Emrys will demonstrate core capabilities through two primary tasks:
 
@@ -103,19 +92,25 @@ The first iteration of Emrys will demonstrate core capabilities through two prim
   - Installation monitoring and verification
   - Rollback capabilities
 
-#### Goal 3: Web Browser Access
-- **Objective**: Prove Emrys can interact with the web
+#### Goal 3: Web Browser Access via ChatGPT Atlas
+- **Objective**: Prove Emrys can interact with the web using an AI-enhanced browser
 - **Tasks**:
-  - Install a headless browser (via Nix)
-  - Launch and control browser instances
-  - Navigate to websites and extract information
-  - Demonstrate basic web automation
+  - Install ChatGPT Atlas (Chromium fork with ChatGPT integration) via Nix
+  - Launch and control ChatGPT Atlas instances
+  - Leverage Atlas's built-in AI capabilities for web navigation
+  - Demonstrate AI-assisted browsing and task completion
 
 - **Technical Requirements**:
-  - Browser process management
-  - Playwright or Selenium integration
-  - DOM interaction and data extraction
+  - Browser process management for ChatGPT Atlas
+  - Investigation of headless mode support (may or may not be available)
+  - Integration with Atlas's command/control interface
+  - Utilization of Atlas's ChatGPT-powered context understanding
   - Screenshot and debugging capabilities
+  
+- **Notes**:
+  - ChatGPT Atlas provides AI-assisted browsing capabilities, reducing the complexity of web automation
+  - Atlas's Chromium foundation ensures compatibility with modern web standards
+  - The AI integration in Atlas should make Emrys more capable at complex web tasks
 
 ## Component Communication Flow
 
@@ -123,18 +118,21 @@ The first iteration of Emrys will demonstrate core capabilities through two prim
 ┌─────────────────────────────────────────────────────────────┐
 │                        User Access                          │
 ├─────────────────┬───────────────────────────────────────────┤
-│   Local TTY     │        Web Browser (xterm.js)             │
+│   Local TTY     │     SSH + screen/tmux (Remote)            │
 └────────┬────────┴──────────────────┬────────────────────────┘
          │                           │
-         │                           │ WebSocket
-         │                           │
+         │                           │ Terminal
+         │                           │ Session
          ▼                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   Bubbletea TUI Engine                      │
-│  ┌──────────────┬──────────────┬──────────────────────┐    │
-│  │   Console    │    Status    │    Task Monitor      │    │
-│  │   Interface  │   Dashboard  │    & Logs            │    │
-│  └──────────────┴──────────────┴──────────────────────┘    │
+│           screen/tmux Session (Persistent)                  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │             Bubbletea TUI Engine                      │  │
+│  │  ┌──────────────┬──────────────┬──────────────────┐  │  │
+│  │  │   Console    │    Status    │   Task Monitor   │  │  │
+│  │  │   Interface  │   Dashboard  │   & Logs         │  │  │
+│  │  └──────────────┴──────────────┴──────────────────┘  │  │
+│  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           │ Commands
@@ -152,8 +150,8 @@ The first iteration of Emrys will demonstrate core capabilities through two prim
 ┌─────────────────────────────────────────────────────────────┐
 │                    Tool Layer                               │
 │  ┌──────────────┬──────────────┬──────────────────────┐    │
-│  │   Shell      │  AppleScript │    Browser           │    │
-│  │   Executor   │  Executor    │    Automation        │    │
+│  │   Shell      │  AppleScript │  ChatGPT Atlas       │    │
+│  │   Executor   │  Executor    │  (AI Browser)        │    │
 │  └──────────────┴──────────────┴──────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -165,20 +163,17 @@ The first iteration of Emrys will demonstrate core capabilities through two prim
 - **TUI Library**: [Bubbletea](https://github.com/charmbracelet/bubbletea)
 - **TUI Components**: [Bubbles](https://github.com/charmbracelet/bubbles) (text input, viewport, etc.)
 - **Styling**: [Lipgloss](https://github.com/charmbracelet/lipgloss) (terminal styling)
-- **Web Server**: net/http (standard library)
-- **WebSocket**: [gorilla/websocket](https://github.com/gorilla/websocket) or standard library websocket
-- **PTY Management**: [creack/pty](https://github.com/creack/pty)
 
-### Frontend (Web)
-- **Terminal Emulator**: [xterm.js](https://xtermjs.org/)
-- **Communication**: WebSocket API (browser native)
-- **UI Framework**: Vanilla JavaScript (minimal dependencies)
-- **Styling**: CSS (minimal framework)
+### Remote Access
+- **SSH**: macOS built-in SSH server (OpenSSH)
+- **Terminal Multiplexer**: screen or tmux for session persistence
+- **Authentication**: SSH keys and standard SSH authentication
 
 ### AI/Agent
 - **LLM Runtime**: Ollama (local inference)
 - **Models**: Open-source models (Llama 3, Mistral, Qwen, etc.)
-- **Browser Automation**: Playwright (Go bindings)
+- **Browser**: ChatGPT Atlas (Chromium fork with ChatGPT integration)
+- **Browser Automation**: Integration with ChatGPT Atlas's control interface
 
 ### System Tools
 - **Package Management**: Nix
@@ -195,31 +190,32 @@ The first iteration of Emrys will demonstrate core capabilities through two prim
 5. Results rendered back to TUI
 6. Display updated in terminal
 
-### Web Interface Interaction:
-1. User types in xterm.js browser terminal
-2. Input sent via WebSocket to Go server
-3. Server writes input to PTY
-4. PTY connected to Bubbletea TUI
-5. TUI processes command (same as local flow)
-6. TUI output written to PTY
-7. Server reads PTY output and sends via WebSocket
-8. xterm.js renders output in browser
+### Remote SSH Interaction:
+1. User connects via SSH to Mac Mini
+2. User attaches to screen/tmux session running Emrys
+3. User inputs command in terminal (same as local)
+4. Bubbletea handles input event
+5. Command dispatched to Agent Core
+6. Agent processes and executes via Tool Layer
+7. Results rendered back to TUI
+8. Display updated in terminal (visible over SSH)
 
-### Read-Only Mode:
-1. Browser connects via WebSocket
-2. Server flags session as read-only
-3. TUI output streamed to browser
-4. Browser input disabled or ignored
-5. Updates continue in real-time
+### Read-Only Monitoring:
+1. User connects via SSH to Mac Mini
+2. User attaches to screen/tmux session in read-only mode
+   - screen: `screen -x` allows shared viewing
+   - tmux: `tmux attach -r` for read-only access
+3. TUI output visible but input is restricted
+4. Multiple users can monitor simultaneously
 
 ## Security Considerations
 
-### Web Access:
-- **Authentication**: Token-based or session-based auth for web access
-- **HTTPS**: TLS encryption for web interface
-- **WebSocket Security**: WSS (WebSocket Secure) protocol
-- **Access Control**: Separate tokens for read-only vs. active modes
-- **Rate Limiting**: Prevent abuse of web endpoints
+### SSH Access:
+- **Authentication**: SSH key-based authentication (no password access)
+- **Encryption**: All traffic encrypted via SSH protocol
+- **Firewall**: SSH port (22 or custom) properly configured
+- **Access Control**: User accounts and SSH authorized_keys management
+- **Audit Logging**: SSH connection logs and session activity tracking
 
 ### Agent Operations:
 - **Sandboxing**: Initial operations restricted to safe commands
@@ -237,27 +233,29 @@ The first iteration of Emrys will demonstrate core capabilities through two prim
 
 ### Application Configuration:
 ```
-# Server settings
-server.host: localhost
-server.port: 8080
-server.tls: true
-server.cert: /path/to/cert.pem
-server.key: /path/to/key.pem
-
-# Authentication
-auth.enabled: true
-auth.read_only_token: <generated-token>
-auth.active_token: <generated-token>
+# Session settings
+session.multiplexer: tmux  # or "screen"
+session.name: emrys
+session.auto_create: true
 
 # Agent settings
 agent.model: llama3
 agent.ollama_url: http://localhost:11434
 agent.max_concurrent_tasks: 3
 
+# Browser settings
+browser.type: chatgpt-atlas
+browser.headless: auto  # Use headless if available, otherwise GUI
+browser.executable: /path/to/chatgpt-atlas
+
 # Logging
 log.level: info
 log.file: /var/log/emrys/emrys.log
 log.max_size_mb: 100
+
+# SSH/Access (managed by macOS)
+# SSH configuration in /etc/ssh/sshd_config
+# Authorized keys in ~/.ssh/authorized_keys
 ```
 
 ## Development Phases
@@ -267,13 +265,13 @@ log.max_size_mb: 100
 - Simple Bubbletea TUI with command input
 - Static content display
 - Logging system
+- Integration with screen/tmux for session persistence
 
-### Phase 2: Web Interface
-- HTTP server implementation
-- WebSocket communication
-- xterm.js integration
-- PTY management
-- Basic authentication
+### Phase 2: Remote Access Setup
+- SSH server configuration on Mac Mini
+- screen/tmux session management
+- Auto-start on boot configuration
+- Session recovery and reconnection handling
 
 ### Phase 3: Agent Integration
 - Ollama LLM connection
@@ -284,15 +282,15 @@ log.max_size_mb: 100
 ### Phase 4: Initial Capabilities
 - Nix installation workflow
 - Package management via Nix
-- Browser automation setup
-- Web browsing capability demonstration
+- ChatGPT Atlas installation and integration
+- AI-assisted web browsing demonstration
 
 ### Phase 5: Polish & Enhancement
-- Multi-user session management
-- Enhanced read-only mode features
+- Session sharing and read-only access refinement
 - Improved error handling
 - Comprehensive logging
 - Configuration management
+- Auto-recovery from crashes
 
 ## File Structure
 
@@ -311,26 +309,21 @@ emrys/
 │   │   ├── commands.go             # Command handling
 │   │   ├── views.go                # UI views/screens
 │   │   └── components.go           # Reusable UI components
-│   ├── server/
-│   │   ├── http.go                 # HTTP server
-│   │   ├── websocket.go            # WebSocket handler
-│   │   ├── auth.go                 # Authentication
-│   │   └── session.go              # Session management
+│   ├── session/
+│   │   ├── manager.go              # screen/tmux session management
+│   │   └── recovery.go             # Session recovery and persistence
 │   ├── tools/
 │   │   ├── shell.go                # Shell command execution
 │   │   ├── nix.go                  # Nix package management
-│   │   ├── browser.go              # Browser automation
+│   │   ├── atlas.go                # ChatGPT Atlas browser control
 │   │   └── applescript.go          # AppleScript execution
 │   └── llm/
 │       ├── client.go               # Ollama client
 │       └── models.go               # Model management
-├── web/
-│   ├── static/
-│   │   ├── index.html              # Main web page
-│   │   ├── app.js                  # Frontend JavaScript
-│   │   └── styles.css              # Styling
-│   └── assets/
-│       └── xterm/                  # xterm.js library
+├── scripts/
+│   ├── setup-ssh.sh                # SSH configuration helper
+│   ├── start-session.sh            # Launch Emrys in screen/tmux
+│   └── install-nix.sh              # Nix installation script
 ├── config/
 │   └── config.yaml                 # Configuration file
 ├── go.mod                          # Go module definition
@@ -343,13 +336,15 @@ emrys/
 The initial design succeeds when:
 
 1. **TUI Functionality**: Bubbletea interface runs smoothly with command input/output
-2. **Web Access**: Browser can connect and view/interact with the TUI via xterm.js
-3. **Mode Switching**: Read-only and active modes work as specified
-4. **Nix Installation**: Emrys can successfully install Nix on a fresh macOS system
-5. **Package Management**: Emrys can install and manage packages using Nix
-6. **Web Browsing**: Emrys can launch a browser and navigate to websites
-7. **Logging**: All operations are logged and visible in the TUI
-8. **Security**: Web access is properly authenticated and secured
+2. **Session Persistence**: TUI runs reliably in screen/tmux and survives disconnections
+3. **SSH Access**: Remote users can connect and interact with the TUI via SSH
+4. **Read-Only Monitoring**: Multiple users can observe TUI activity without interfering
+5. **Nix Installation**: Emrys can successfully install Nix on a fresh macOS system
+6. **Package Management**: Emrys can install and manage packages using Nix
+7. **ChatGPT Atlas Integration**: Emrys can launch and control ChatGPT Atlas for web tasks
+8. **AI-Assisted Browsing**: Atlas's ChatGPT integration enhances web interaction capabilities
+9. **Logging**: All operations are logged and visible in the TUI
+10. **Security**: SSH access is properly secured with key-based authentication
 
 ## Future Considerations
 
@@ -366,10 +361,10 @@ While not part of the initial design, these considerations inform architectural 
 - Custom model fine-tuning support
 
 ### User Experience:
-- Mobile-responsive web interface
 - Voice interaction capabilities
 - Natural language command interface
 - Customizable themes and layouts
+- Mobile SSH client support for on-the-go access
 
 ### Advanced Features:
 - Scheduled task execution
@@ -379,4 +374,4 @@ While not part of the initial design, these considerations inform architectural 
 
 ## Conclusion
 
-This initial design establishes a solid foundation for Emrys as a Go-based console application with both local TUI access and web-based remote access. The architecture supports the core vision of a local, privacy-first AI assistant while providing flexibility for future enhancements. The focus on Nix installation and web browsing as initial goals provides concrete, achievable milestones that demonstrate the system's capabilities.
+This initial design establishes a solid foundation for Emrys as a Go-based console application with persistent TUI access via screen/tmux and secure SSH remote access. The architecture supports the core vision of a local, privacy-first AI assistant while providing flexibility for future enhancements. The integration of ChatGPT Atlas as an AI-enhanced browser provides powerful web interaction capabilities that leverage existing AI technology. The focus on Nix installation and AI-assisted web browsing as initial goals provides concrete, achievable milestones that demonstrate the system's capabilities.
