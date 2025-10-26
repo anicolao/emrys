@@ -36,7 +36,36 @@ Emrys aims to be the kind of AI assistant portrayed in science fiction—capable
 
 ## Installation
 
-> **Note:** Emrys is currently in early development. Full installation instructions will be provided as the project matures.
+### Quick Start
+
+Emrys will automatically set up nix-darwin on first run if it's not already installed.
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/anicolao/emrys.git
+   cd emrys
+   ```
+
+2. **Build Emrys:**
+   ```bash
+   go build -o emrys ./cmd/emrys
+   ```
+
+3. **Run the setup:**
+   ```bash
+   ./emrys
+   ```
+
+The application will detect if nix-darwin is not installed and guide you through the installation process, which includes:
+- Installing Nix (if not already present)
+- Installing nix-darwin
+- Applying a basic system configuration
+
+### Manual Installation
+
+If you prefer to install nix-darwin manually, you can do so before running Emrys. See the [nix-darwin documentation](https://github.com/LnL7/nix-darwin) for details.
+
+> **Note:** Emrys is currently in early development. More features and installation options will be provided as the project matures.
 
 ## Architecture
 
