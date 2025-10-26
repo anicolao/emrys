@@ -131,4 +131,4 @@ Emrys is experimental software. It has the ability to execute commands and contr
 
 ---
 
-*"Any sufficiently advanced technology is indistinguishable from magic."* — Arthur C. Clarke [sic]
+*"Any sufficiently advanced technology is indistinguishable from ~~magic~~ a human."* — Arthur C. Clarke [sic]
