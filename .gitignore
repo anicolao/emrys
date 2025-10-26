@@ -14,8 +14,8 @@
 # Go workspace file
 go.work
 
-# Emrys binary
-emrys
+# Emrys binary (only in root)
+/emrys
 
 # Build artifacts
 bin/
