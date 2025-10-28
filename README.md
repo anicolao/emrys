@@ -36,30 +36,35 @@ Emrys aims to be the kind of AI assistant portrayed in science fiction—capable
 
 ## Installation
 
-### Quick Start
+### Quick Start (Standalone Binary)
 
-Emrys will automatically set up nix-darwin on first run if it's not already installed.
+The Emrys binary is completely standalone - it embeds the nix-darwin configuration and has no external dependencies. You can simply download and run it on a fresh macOS system.
 
-1. **Clone the repository:**
+1. **Download the binary** (or build from source):
    ```bash
+   # Option A: Download pre-built binary (when available)
+   # curl -L https://github.com/anicolao/emrys/releases/latest/download/emrys -o emrys
+   # chmod +x emrys
+
+   # Option B: Build from source
    git clone https://github.com/anicolao/emrys.git
    cd emrys
-   ```
-
-2. **Build Emrys:**
-   ```bash
    go build -o emrys ./cmd/emrys
    ```
 
-3. **Run the setup:**
+2. **Run the setup:**
    ```bash
    ./emrys
    ```
 
-The application will detect if nix-darwin is not installed and guide you through the installation process, which includes:
-- Installing Nix (if not already present)
-- Installing nix-darwin
-- Applying a basic system configuration
+The standalone binary will:
+- Detect if nix-darwin is not installed
+- Guide you through the installation process
+- Install Nix (if not already present)
+- Install nix-darwin with an embedded configuration
+- Apply a basic system configuration
+
+**No additional files needed!** The configuration is embedded in the binary itself.
 
 ### Manual Installation
 

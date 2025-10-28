@@ -108,6 +108,54 @@ func InstallNixDarwin(configPath string) error {
 	return nil
 }
 
+// InstallNixDarwinWithConfig installs nix-darwin with the provided configuration content
+func InstallNixDarwinWithConfig(configContent string) error {
+	fmt.Println("Installing nix-darwin...")
+
+	// First, ensure the configuration is in the right place
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get home directory: %w", err)
+	}
+
+	nixpkgsDir := filepath.Join(homeDir, ".nixpkgs")
+	if err := os.MkdirAll(nixpkgsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create .nixpkgs directory: %w", err)
+	}
+
+	// Write the configuration content to file
+	destConfig := filepath.Join(nixpkgsDir, "darwin-configuration.nix")
+	if err := os.WriteFile(destConfig, []byte(configContent), 0644); err != nil {
+		return fmt.Errorf("failed to write configuration: %w", err)
+	}
+
+	fmt.Printf("✓ Configuration written to %s\n", destConfig)
+
+	// Run nix-darwin installation
+	// We need to source nix before running nix commands
+	installCmd := `
+		set -e
+		if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+			. '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+		fi
+		nix-build https://github.com/LnL7/nix-darwin/archive/master.tar.gz -A installer
+		./result/bin/darwin-installer
+	`
+
+	cmd := exec.Command("sh", "-c", installCmd)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Dir = homeDir
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to install nix-darwin: %w", err)
+	}
+
+	fmt.Println("✓ nix-darwin installed successfully")
+	return nil
+}
+
 // copyFile copies a file from src to dst
 func copyFile(src, dst string) error {
 	input, err := os.ReadFile(src)
