@@ -43,11 +43,11 @@ func IsNixInstalled() bool {
 
 // InstallNix installs Nix on the system
 func InstallNix() error {
-	fmt.Println("Installing Nix...")
+	fmt.Println("Installing Nix (Lix)...")
 	fmt.Println("This will require sudo access and may take several minutes.")
 
-	// Use the Determinate Nix Installer which is recommended for macOS
-	cmd := exec.Command("sh", "-c", "curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install")
+	// Use the Lix installer
+	cmd := exec.Command("sh", "-c", "curl -sSf -L https://install.lix.systems/lix | sh -s -- install")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
