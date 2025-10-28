@@ -9,30 +9,10 @@ import (
 
 // IsInstalled checks if nix-darwin is installed on the system
 func IsInstalled() bool {
-	// Check if darwin-rebuild command exists
+	// Only check if darwin-rebuild command exists
+	// Configuration files may exist even if nix-darwin installation failed
 	_, err := exec.LookPath("darwin-rebuild")
-	if err == nil {
-		return true
-	}
-
-	// Check if nix-darwin configuration directory exists
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return false
-	}
-
-	nixDarwinPath := filepath.Join(homeDir, ".nixpkgs", "darwin-configuration.nix")
-	if _, err := os.Stat(nixDarwinPath); err == nil {
-		return true
-	}
-
-	// Check alternative location
-	nixDarwinPath = "/etc/nix/darwin-configuration.nix"
-	if _, err := os.Stat(nixDarwinPath); err == nil {
-		return true
-	}
-
-	return false
+	return err == nil
 }
 
 // IsNixInstalled checks if Nix is installed on the system
