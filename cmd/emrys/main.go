@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/anicolao/emrys/internal/config"
 	"github.com/anicolao/emrys/internal/nixdarwin"
 )
 
@@ -61,29 +61,8 @@ func main() {
 	// Step 2: Install nix-darwin
 	fmt.Println("Step 2: Installing nix-darwin...")
 
-	// Get the path to the configuration file
-	// First, try to find it relative to the executable
-	exePath, err := os.Executable()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to get executable path: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Look for config in the repository
-	configPath := filepath.Join(filepath.Dir(exePath), "..", "config", "darwin-configuration.nix")
-
-	// If not found, try current directory (for development)
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		configPath = filepath.Join("config", "darwin-configuration.nix")
-	}
-
-	// Verify the config file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		fmt.Fprintf(os.Stderr, "Error: configuration file not found at %s\n", configPath)
-		os.Exit(1)
-	}
-
-	if err := nixdarwin.InstallNixDarwin(configPath); err != nil {
+	// Use the embedded configuration
+	if err := nixdarwin.InstallNixDarwinWithConfig(config.DefaultNixDarwinConfig); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
