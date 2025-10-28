@@ -60,11 +60,11 @@ The Emrys binary is completely standalone - it embeds the nix-darwin configurati
 The standalone binary will:
 - Detect if nix-darwin is not installed
 - Guide you through the installation process
-- Install Nix (if not already present)
-- Install nix-darwin with an embedded configuration
+- Install Nix using the Lix installer (if not already present)
+- Install nix-darwin with an embedded flake-based configuration
 - Apply a basic system configuration
 
-**No additional files needed!** The configuration is embedded in the binary itself.
+**No additional files needed!** Both the nix-darwin configuration and flake.nix are embedded in the binary itself.
 
 ### Manual Installation
 

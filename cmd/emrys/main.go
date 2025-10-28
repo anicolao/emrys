@@ -61,8 +61,8 @@ func main() {
 	// Step 2: Install nix-darwin
 	fmt.Println("Step 2: Installing nix-darwin...")
 
-	// Use the embedded configuration
-	if err := nixdarwin.InstallNixDarwinWithConfig(config.DefaultNixDarwinConfig); err != nil {
+	// Use the embedded configuration and flake
+	if err := nixdarwin.InstallNixDarwinWithFlake(config.DefaultNixDarwinConfig, config.DefaultFlakeConfig); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

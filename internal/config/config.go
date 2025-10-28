@@ -6,3 +6,8 @@ import _ "embed"
 //
 //go:embed darwin-configuration.nix
 var DefaultNixDarwinConfig string
+
+// DefaultFlakeConfig contains the embedded flake.nix configuration
+//
+//go:embed flake.nix
+var DefaultFlakeConfig string
