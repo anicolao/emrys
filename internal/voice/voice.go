@@ -34,13 +34,12 @@ func DefaultConfig() Config {
 
 // Speaker manages voice output with message queuing
 type Speaker struct {
-	config     Config
-	queue      chan string
-	wg         sync.WaitGroup
-	mu         sync.RWMutex
-	stop       chan struct{}
-	closeOnce  sync.Once
-	closeMutex sync.Mutex
+	config    Config
+	queue     chan string
+	wg        sync.WaitGroup
+	mu        sync.RWMutex
+	stop      chan struct{}
+	closeOnce sync.Once
 }
 
 // NewSpeaker creates a new Speaker with the given configuration
