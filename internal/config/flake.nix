@@ -8,22 +8,8 @@
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs }:
-  let
-    # Support both Apple Silicon and Intel Macs
-    systems = [ "aarch64-darwin" "x86_64-darwin" ];
-    
-    # Helper to create configurations for each system
-    forAllSystems = nixpkgs.lib.genAttrs systems;
-  in
   {
-    darwinConfigurations = forAllSystems (system:
-      nix-darwin.lib.darwinSystem {
-        inherit system;
-        modules = [ ./darwin-configuration.nix ];
-      }
-    );
-    
-    # Default configuration (will be used when system is auto-detected)
+    # Single configuration that auto-detects the system (Apple Silicon or Intel)
     darwinConfigurations."emrys" = nix-darwin.lib.darwinSystem {
       system = builtins.currentSystem;
       modules = [ ./darwin-configuration.nix ];
