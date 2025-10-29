@@ -39,10 +39,6 @@ func main() {
 				os.Exit(1)
 			}
 
-			fmt.Println("Next steps:")
-			fmt.Println("  - Restart your terminal to ensure all packages are in your PATH")
-			fmt.Println("  - Run 'ollama serve' to start the Ollama service")
-			fmt.Println("  - Run 'ollama pull llama3.2' to download a default model")
 			fmt.Println()
 			return
 		}

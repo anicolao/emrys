@@ -125,6 +125,17 @@ func TestUpdateNixDarwinConfiguration(t *testing.T) {
 		t.Error("Updated configuration doesn't contain SSH configuration")
 	}
 
+	// Verify auto-login configuration was added and is enabled (not commented out)
+	if !contains(updatedStr, "system.defaults.loginwindow") {
+		t.Error("Updated configuration doesn't contain auto-login configuration")
+	}
+	if !contains(updatedStr, "autoLoginUser = \"testuser\";") {
+		t.Error("Updated configuration doesn't contain enabled auto-login user")
+	}
+	if contains(updatedStr, "# autoLoginUser") {
+		t.Error("Auto-login configuration is commented out (should be enabled)")
+	}
+
 	// Run again to test idempotency
 	err = UpdateNixDarwinConfiguration()
 	if err != nil {
