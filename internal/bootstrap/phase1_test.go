@@ -153,6 +153,70 @@ func TestUpdateNixDarwinConfiguration(t *testing.T) {
 	}
 }
 
+func TestUpdateNixDarwinConfiguration_MissingFile(t *testing.T) {
+	// Create a temporary directory for testing
+	tmpDir := t.TempDir()
+	nixpkgsDir := filepath.Join(tmpDir, ".nixpkgs")
+	// Create the directory but don't create the config file
+	if err := os.MkdirAll(nixpkgsDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
+
+	configPath := filepath.Join(nixpkgsDir, "darwin-configuration.nix")
+
+	// Verify file doesn't exist
+	if _, err := os.Stat(configPath); !os.IsNotExist(err) {
+		t.Fatal("Config file should not exist at start of test")
+	}
+
+	// Temporarily change HOME to our test directory
+	oldHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", oldHome)
+
+	// Set a test username
+	oldUser := os.Getenv("USER")
+	os.Setenv("USER", "testuser")
+	defer os.Setenv("USER", oldUser)
+
+	// Test updating the configuration when file is missing
+	err := UpdateNixDarwinConfiguration()
+	if err != nil {
+		t.Fatalf("UpdateNixDarwinConfiguration failed with missing file: %v", err)
+	}
+
+	// Verify file was created
+	if _, err := os.Stat(configPath); err != nil {
+		t.Fatalf("Config file was not created: %v", err)
+	}
+
+	// Read the generated configuration
+	content, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("Failed to read generated configuration: %v", err)
+	}
+
+	configStr := string(content)
+
+	// Verify it has all the expected components
+	if !contains(configStr, "# Phase 1 Bootstrap Packages") {
+		t.Error("Generated configuration doesn't contain Phase 1 packages marker")
+	}
+	if !contains(configStr, "ollama") {
+		t.Error("Generated configuration doesn't contain ollama package")
+	}
+	if !contains(configStr, "services.openssh.enable") {
+		t.Error("Generated configuration doesn't contain SSH configuration")
+	}
+	if !contains(configStr, "autoLoginUser = \"testuser\";") {
+		t.Error("Generated configuration doesn't contain auto-login with correct username")
+	}
+	if !contains(configStr, "system.primaryUser = \"testuser\";") {
+		t.Error("Generated configuration doesn't have correct primary user")
+	}
+}
+
+
 // Helper function to check if a string contains a substring
 func contains(s, substr string) bool {
 	return len(s) > 0 && len(substr) > 0 &&

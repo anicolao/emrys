@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/anicolao/emrys/internal/config"
 	"github.com/anicolao/emrys/internal/nixdarwin"
 )
 
@@ -54,13 +55,35 @@ func UpdateNixDarwinConfiguration() error {
 
 	configPath := filepath.Join(homeDir, ".nixpkgs", "darwin-configuration.nix")
 
-	// Read the current configuration
+	// Read the current configuration or use the embedded template if it doesn't exist
+	var configStr string
 	content, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to read configuration: %w", err)
+		if os.IsNotExist(err) {
+			// File doesn't exist, use the embedded template
+			fmt.Println("Configuration file not found, using embedded template...")
+			
+			// Get the embedded configuration
+			configStr = config.DefaultNixDarwinConfig
+			
+			// Get the current username to set as system.primaryUser
+			username := os.Getenv("USER")
+			if username == "" {
+				// Fallback to getting username from home directory path
+				username = filepath.Base(homeDir)
+			}
+			if username == "" {
+				return fmt.Errorf("failed to determine username")
+			}
+			
+			// Replace the username placeholder in the configuration
+			configStr = strings.Replace(configStr, "__EMRYS_USERNAME__", username, -1)
+		} else {
+			return fmt.Errorf("failed to read configuration: %w", err)
+		}
+	} else {
+		configStr = string(content)
 	}
-
-	configStr := string(content)
 
 	// Track if any changes were made
 	configChanged := false
@@ -157,6 +180,12 @@ func UpdateNixDarwinConfiguration() error {
 
 	// Replace the username placeholder in auto-login configuration
 	configStr = strings.Replace(configStr, "__EMRYS_USERNAME__", username, -1)
+
+	// Ensure the .nixpkgs directory exists
+	nixpkgsDir := filepath.Dir(configPath)
+	if err := os.MkdirAll(nixpkgsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create .nixpkgs directory: %w", err)
+	}
 
 	// Write the updated configuration
 	if err := os.WriteFile(configPath, []byte(configStr), 0644); err != nil {
