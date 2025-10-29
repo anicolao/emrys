@@ -216,7 +216,6 @@ func TestUpdateNixDarwinConfiguration_MissingFile(t *testing.T) {
 	}
 }
 
-
 // Helper function to check if a string contains a substring
 func contains(s, substr string) bool {
 	return len(s) > 0 && len(substr) > 0 &&

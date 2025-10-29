@@ -45,6 +45,33 @@ func main() {
 
 		fmt.Println("✓ Phase 1 bootstrap is complete!")
 		fmt.Println()
+
+		// Check if Phase 2 bootstrap is complete
+		if !bootstrap.IsPhase2Complete() {
+			fmt.Println("⚠ Phase 2 bootstrap is not yet complete.")
+			fmt.Println()
+
+			if !confirm("Would you like to run Phase 2 bootstrap now?") {
+				fmt.Println("Bootstrap cancelled. Run this command again when ready.")
+				return
+			}
+
+			fmt.Println()
+			if err := bootstrap.RunPhase2(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				os.Exit(1)
+			}
+
+			fmt.Println()
+			fmt.Println("Next steps:")
+			fmt.Println("  - Phase 3 will configure voice output")
+			fmt.Println("  - Phase 4 will set up the TUI application")
+			fmt.Println()
+			return
+		}
+
+		fmt.Println("✓ Phase 2 bootstrap is complete!")
+		fmt.Println()
 		fmt.Println("Emrys is ready to use.")
 		return
 	}
