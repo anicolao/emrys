@@ -19,6 +19,7 @@ The fully bootstrapped system will have:
 - Tmux installed and configured for session management
 - Emrys TUI application running persistently in a tmux session
 - Voice output capability using macOS `say` command with Jamie (Premium) voice
+- SSH server enabled with user's public key configured for remote access
 - Auto-login configured for the dedicated user account
 - Emrys set to auto-start on login as a login item
 - Automatic recovery to working state after power outages
@@ -157,6 +158,26 @@ Configure tmux for persistent Emrys session management.
 - Support multiple simultaneous viewers
 - Implement read-only attachment capability
 - Document SSH setup and connection procedures
+
+#### SSH Server Configuration
+- Verify SSH server (Remote Login) is enabled on the Mac Mini
+- Provide instructions or automation to enable SSH via System Settings
+- Configure SSH server for optimal security (disable password auth, use keys only)
+- Test SSH connectivity on local network
+
+#### SSH Key Setup
+- Prompt user to provide their public SSH key during bootstrap
+- Accept public key input via multiple methods:
+  - Direct paste into terminal during interactive bootstrap
+  - Read from a file path specified by user
+  - Read from clipboard if available
+  - Import from existing `~/.ssh/authorized_keys` on another machine
+- Validate SSH public key format before accepting
+- Add the public key to `~/.ssh/authorized_keys` with correct permissions
+- Set appropriate permissions on SSH directory and files (`chmod 700 ~/.ssh`, `chmod 600 ~/.ssh/authorized_keys`)
+- Verify the public key was added correctly
+- Provide instructions for testing SSH access from remote machine
+- Support adding multiple public keys for different devices/users
 
 ### Phase 6: Auto-Start Configuration
 
@@ -299,7 +320,8 @@ Verify the complete bootstrap process works reliably.
 - Bootstrap after system updates
 - Recovery from power outage (simulated)
 - Recovery from individual service failures
-- Multi-user access via SSH
+- SSH key configuration with various input methods (paste, file, clipboard)
+- Multi-user access via SSH with different keys
 - Voice output functionality
 - Configuration changes and reloads
 - Disk space exhaustion recovery
@@ -308,13 +330,16 @@ Verify the complete bootstrap process works reliably.
 - All packages installed correctly via nix-darwin
 - Ollama service running and responsive
 - Default model downloaded and functional
+- SSH server enabled and accessible
+- User's SSH public key correctly installed in authorized_keys
+- SSH key-based authentication working from remote machine
 - TUI application starts and displays correctly
 - Tmux session persists across disconnections
 - Voice output works with Jamie (Premium) voice
 - Auto-login functions after restart
 - Emrys auto-starts on login
 - System recovers after simulated power loss
-- SSH remote access works correctly
+- SSH remote access to tmux session works correctly
 - Error conditions handled gracefully
 
 #### Documentation Requirements
@@ -329,6 +354,7 @@ Verify the complete bootstrap process works reliably.
 ### Step 1: Enhance Emrys Binary
 Modify the main emrys binary to include bootstrap functionality:
 - Add bootstrap command or automatic bootstrap after initial install
+- Implement SSH public key collection and configuration
 - Implement package installation orchestration
 - Add Ollama setup and model download
 - Integrate voice setup
@@ -370,17 +396,19 @@ When the user runs the enhanced emrys binary after initial nix-darwin installati
 1. Welcome message explaining the bootstrap process
 2. Pre-flight checks (system requirements, disk space, network)
 3. Prompt user for confirmation to proceed
-4. Update nix-darwin configuration with required packages
-5. Run darwin-rebuild to install packages (with progress indication)
-6. Initialize Ollama and download default model
-7. Verify Jamie (Premium) voice availability, prompt to install if missing
-8. Build and install Emrys TUI binary
-9. Create tmux configuration
-10. Set up launch agent for auto-start
-11. Provide instructions for enabling auto-login
-12. Offer to start Emrys immediately or on next login
-13. Display success message with next steps
-14. Launch Emrys in tmux (if user confirmed immediate start)
+4. Collect user's SSH public key for remote access
+5. Update nix-darwin configuration with required packages
+6. Run darwin-rebuild to install packages (with progress indication)
+7. Initialize Ollama and download default model
+8. Verify Jamie (Premium) voice availability, prompt to install if missing
+9. Configure SSH server and install user's public key
+10. Build and install Emrys TUI binary
+11. Create tmux configuration
+12. Set up launch agent for auto-start
+13. Provide instructions for enabling auto-login
+14. Offer to start Emrys immediately or on next login
+15. Display success message with next steps and SSH access instructions
+16. Launch Emrys in tmux (if user confirmed immediate start)
 
 ## Success Criteria
 
@@ -391,11 +419,12 @@ The bootstrap process is successful when:
 3. Ollama is running with an appropriate model downloaded
 4. Emrys TUI application launches in tmux and displays status
 5. Voice output is functional and uses Jamie (Premium) voice
-6. System auto-starts Emrys on boot/login
-7. System recovers automatically after power outages
-8. Remote SSH access to tmux session works correctly
-9. Clear error messages and recovery procedures for any failures
-10. Complete documentation is available for users
+6. SSH server is enabled and user's public key is correctly installed for remote access
+7. System auto-starts Emrys on boot/login
+8. System recovers automatically after power outages
+9. Remote SSH access to tmux session works correctly using the configured key
+10. Clear error messages and recovery procedures for any failures
+11. Complete documentation is available for users
 
 ## Security Considerations
 
