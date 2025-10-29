@@ -4,7 +4,7 @@ This document describes the Phase 1 bootstrap implementation for Emrys.
 
 ## Overview
 
-Phase 1 implements package installation via nix-darwin, as specified in BOOTSTRAP.md. The implementation automatically detects and installs required packages, configures SSH server settings, and provides auto-login configuration options.
+Phase 1 implements package installation via nix-darwin, as specified in BOOTSTRAP.md. The implementation automatically detects and installs required packages and provides auto-login configuration for dedicated hardware.
 
 ## Architecture
 
@@ -26,19 +26,14 @@ Phase 1 installs the following packages via nix-darwin:
 
 **Note:** All packages are installed from nixpkgs-unstable and are automatically kept up-to-date through nix-darwin. Ollama models are managed separately and can be downloaded after installation.
 
-### SSH Server Configuration
-
-Automatically configures the SSH server via nix-darwin with:
-- SSH service enabled
-- Password authentication disabled (key-based auth only)
-- Root login disabled
-
 ### Auto-Login Configuration
 
 Configures auto-login for the dedicated Mac Mini (enabled by default):
 - Auto-login is enabled for unattended operation and power outage recovery
 - Replaces `__EMRYS_USERNAME__` with actual username from configuration
 - Designed for dedicated, physically secure hardware
+
+**Note on SSH:** SSH configuration on macOS should be managed through System Preferences > Sharing > Remote Login, or via `sudo systemsetup -setremotelogin on`. nix-darwin does not provide the same SSH service configuration options as NixOS.
 
 ## Usage
 
@@ -119,11 +114,10 @@ The `UpdateNixDarwinConfiguration()` function:
 1. Reads the current nix-darwin configuration from `~/.nixpkgs/darwin-configuration.nix`
 2. Checks if Phase 1 packages are already included (idempotent)
 3. Adds Phase 1 packages to the `environment.systemPackages` section
-4. Adds SSH server configuration if not already present
-5. Adds auto-login configuration (enabled by default)
-6. Extracts username from existing configuration or environment
-7. Replaces username placeholder in auto-login configuration
-8. Writes the updated configuration back to disk
+4. Adds auto-login configuration (enabled by default)
+5. Extracts username from existing configuration or environment
+6. Replaces username placeholder in auto-login configuration
+7. Writes the updated configuration back to disk
 
 ### Configuration Application
 
@@ -156,19 +150,19 @@ go test ./internal/bootstrap/... -v
 
 ## Security Considerations
 
-### SSH Configuration
-
-- Password authentication is disabled by default
-- Only key-based authentication is allowed
-- Root login is disabled
-- Users must configure SSH keys separately
-
 ### Auto-Login
 
 - Auto-login is enabled by default for dedicated, physically secure hardware
 - Designed for unattended operation and automatic recovery from power outages
 - Username is automatically extracted from the existing nix-darwin configuration
 - Should only be used on physically secure Mac Mini systems
+
+### SSH Access
+
+- SSH configuration on macOS should be managed through System Preferences or systemsetup command
+- For secure remote access, enable SSH in System Preferences > Sharing > Remote Login
+- Configure SSH key-based authentication manually for security
+- Disable password authentication in `/etc/ssh/sshd_config` if needed
 - May have implications for FileVault encryption (see BOOTSTRAP.md Phase 7)
 
 ## Next Steps
@@ -211,4 +205,4 @@ If you encounter permission errors:
 - nix-darwin configuration: `~/.nixpkgs/darwin-configuration.nix`
 - Flake configuration: `~/.nixpkgs/flake.nix`
 - System configuration: `/etc/nix/nix.conf`
-- SSH server configuration: Applied through nix-darwin to system launchd
+- SSH configuration: Managed through macOS System Preferences or `/etc/ssh/sshd_config`

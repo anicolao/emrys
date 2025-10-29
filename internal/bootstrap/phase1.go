@@ -92,17 +92,6 @@ func UpdateNixDarwinConfiguration() error {
     jq
   ];`
 
-	// Also add SSH configuration
-	sshConfig := `
-  # SSH server configuration for remote access
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = false;
-      PermitRootLogin = "no";
-    };
-  };`
-
 	// Also add auto-login configuration for dedicated hardware
 	// This enables automatic recovery after power outages
 	autoLoginConfig := `
@@ -111,12 +100,6 @@ func UpdateNixDarwinConfiguration() error {
   system.defaults.loginwindow = {
     autoLoginUser = "__EMRYS_USERNAME__";
   };`
-
-	// Check if SSH config already exists
-	if !strings.Contains(configStr, "services.openssh") {
-		// Insert SSH config before the closing brace
-		configStr = strings.Replace(configStr, "\n}", sshConfig+"\n}", 1)
-	}
 
 	// Check if auto-login config already exists
 	if !strings.Contains(configStr, "Auto-login configuration") {
