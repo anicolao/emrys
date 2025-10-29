@@ -357,13 +357,14 @@ Phase 3 creates a comprehensive voice output system:
 
 #### Jamie Voice Installation
 
-Phase 3 automatically installs the Jamie (Premium) voice:
+Phase 3 facilitates the installation of the Jamie (Premium) voice:
 
 1. **Voice Detection** - Checks if Jamie voice is available
-2. **Automatic Installation** - Uses macOS `softwareupdate` command to install the voice
-3. **Fallback to Manual** - If automatic installation fails, provides step-by-step manual guide
-4. **Verification** - Confirms voice is properly installed
-5. **Testing** - Speaks a confirmation phrase to verify functionality
+2. **AppleScript Automation** - Opens System Settings to the voice download section
+3. **Guided Installation** - Provides step-by-step instructions while System Settings is open
+4. **User Confirmation** - Prompts user to confirm when download is complete
+5. **Verification** - Confirms voice is properly installed
+6. **Testing** - Speaks a confirmation phrase to verify functionality
 
 #### Voice Output Features
 
@@ -430,17 +431,21 @@ Step 3: Installing Jamie voice...
 Checking Jamie voice installation...
 
 ⚠ Jamie voice is not installed on this system
-Installing Jamie voice automatically...
+Opening System Settings to install Jamie voice...
 
-Searching for Jamie voice in available updates...
-Found Jamie voice package: com.apple.voice.compact.en-GB.Jamie
-Installing Jamie voice (this may take several minutes)...
-Note: You may be asked for your password (sudo access required)
+Opening System Settings to download Jamie voice...
 
-[installation progress...]
+✓ System Settings opened to Accessibility section
 
-Waiting for voice to be registered...
-✓ Jamie voice installed successfully
+To complete the installation:
+  1. In the opened window, navigate to 'Spoken Content' (if not already there)
+  2. Click on the 'System Voice' dropdown
+  3. Click 'Manage Voices...' or 'Customize...'
+  4. Find 'Jamie' in the list (under English (United Kingdom))
+  5. Click the download icon next to Jamie
+  6. Wait for the download to complete (may take several minutes)
+
+Have you installed the Jamie voice? (y/n): y
 ✓ Jamie voice is now available
 
 Step 4: Listing available voices...
@@ -677,20 +682,26 @@ If model verification fails after download:
 
 #### Jamie voice not found
 
-Phase 3 automatically installs Jamie voice using `softwareupdate`. If automatic installation fails or voice is not available:
+Phase 3 uses AppleScript to open System Settings for voice installation. If the voice is not available:
 
-1. **Check automatic installation logs** for error messages
-2. **Try manual softwareupdate**: `sudo softwareupdate --list | grep -i jamie`
-3. **Install manually via command line**: `sudo softwareupdate --install "Voice-Name"`
-4. **Or install via System Settings**:
-   - Open System Settings (or System Preferences on older macOS)
+1. **If AppleScript fails to open System Settings**:
+   - Manually open System Settings (or System Preferences on older macOS)
    - Navigate to Accessibility > Spoken Content
    - Click on "System Voice" dropdown
-   - Select "Manage Voices..."
-   - Find "Jamie" in the list (may be under English or English (United Kingdom))
+   - Select "Manage Voices..." or "Customize..."
+   
+2. **To download Jamie voice**:
+   - Find "Jamie" in the list (under English (United Kingdom))
    - Click the download icon next to Jamie
    - Wait for download to complete (can be several hundred MB)
-5. **Verify installation**: `say -v Jamie "Test"`
+   - Note: This is in the VoiceOver utility section, not softwareupdate
+   
+3. **If you can't find Jamie**:
+   - Look under "English (United Kingdom)" category
+   - Scroll through the voice list carefully
+   - Jamie may be listed as "Jamie (Premium)" or just "Jamie"
+   
+4. **Verify installation**: `say -v Jamie "Test"`
 
 #### Voice test fails
 
