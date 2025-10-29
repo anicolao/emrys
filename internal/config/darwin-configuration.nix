@@ -4,6 +4,10 @@
   # Basic nix-darwin configuration for Emrys
   # This is a minimal configuration that will be used during initial setup
   
+  # Set the primary user (required for certain system.defaults options)
+  # This will be replaced with the actual username during installation
+  system.primaryUser = "__EMRYS_USERNAME__";
+  
   # Set the host platform (will be auto-detected from the system)
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-darwin";
   

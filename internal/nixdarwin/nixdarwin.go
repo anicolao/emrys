@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // IsInstalled checks if nix-darwin is installed on the system
@@ -125,6 +126,19 @@ func InstallNixDarwinWithFlake(configContent, flakeContent string) error {
 		return fmt.Errorf("failed to get home directory: %w", err)
 	}
 
+	// Get the current username to set as system.primaryUser
+	username := os.Getenv("USER")
+	if username == "" {
+		// Fallback to getting username from home directory path
+		username = filepath.Base(homeDir)
+	}
+	if username == "" {
+		return fmt.Errorf("failed to determine username")
+	}
+
+	// Replace the username placeholder in the configuration
+	configContent = strings.Replace(configContent, "__EMRYS_USERNAME__", username, -1)
+
 	nixpkgsDir := filepath.Join(homeDir, ".nixpkgs")
 	if err := os.MkdirAll(nixpkgsDir, 0755); err != nil {
 		return fmt.Errorf("failed to create .nixpkgs directory: %w", err)
@@ -144,6 +158,7 @@ func InstallNixDarwinWithFlake(configContent, flakeContent string) error {
 
 	fmt.Printf("✓ Configuration written to %s\n", destConfig)
 	fmt.Printf("✓ Flake written to %s\n", destFlake)
+	fmt.Printf("✓ Primary user set to: %s\n", username)
 
 	fmt.Println()
 	fmt.Println("Running nix-darwin installation...")
