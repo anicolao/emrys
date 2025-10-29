@@ -18,12 +18,12 @@ The fully bootstrapped system will have:
 - Ollama installed and running locally for AI inference
 - Tmux installed and configured for session management
 - Emrys TUI application running persistently in a tmux session
-- Voice output capability using macOS `say` command with Jamie (Premium) voice
-- SSH server enabled with user's public key configured for remote access
-- Auto-login configured for the dedicated user account
+- Voice output capability using macOS `say` command with Jamie (Premium) voice configured via nix-darwin
+- SSH server configured via nix-darwin with user's public key for remote access
+- Auto-login configured via nix-darwin for the dedicated user account
 - Emrys set to auto-start on login as a login item
 - Automatic recovery to working state after power outages
-- All necessary packages and dependencies managed through nix-darwin
+- All necessary packages, dependencies, and system settings managed through nix-darwin
 
 ## Bootstrap Phases
 
@@ -44,6 +44,8 @@ The emrys binary should be enhanced to:
 - Detect whether the bootstrap packages are installed
 - Update the nix-darwin configuration to include required packages
 - Configure SSH server settings via nix-darwin (enable service, disable password auth)
+- Configure auto-login via nix-darwin settings
+- Configure Jamie (Premium) voice installation via nix-darwin
 - Trigger `darwin-rebuild switch` to apply the configuration
 - Verify successful installation of each required package
 - Handle installation failures gracefully with clear error messages
@@ -85,8 +87,7 @@ Initialize Ollama with appropriate models and ensure it runs as a service.
 Set up macOS text-to-speech capabilities with the Jamie (Premium) voice.
 
 #### Voice Installation
-- Detect whether Jamie (Premium) voice is installed on the system
-- Provide instructions or automation for downloading the voice if missing
+- Configure Jamie (Premium) voice installation via nix-darwin
 - Verify voice installation and availability
 - Set Jamie (Premium) as the default voice for Emrys
 
@@ -100,7 +101,7 @@ Set up macOS text-to-speech capabilities with the Jamie (Premium) voice.
 - Allow user to enable/disable voice output
 - Provide controls for adjusting speech parameters
 - Implement "quiet hours" functionality if desired
-- Add voice output testing utility
+- Add voice output testing utility that speaks a confirmation phrase when voice is working
 
 ### Phase 4: TUI Application Development
 
@@ -213,8 +214,7 @@ Enable automatic login for the dedicated Mac Mini user account to ensure full sy
 - Advise on network security (firewall rules, SSH key-only access)
 
 #### Implementation Strategy
-- Provide clear instructions for enabling auto-login via System Settings
-- Alternatively, provide programmatic method using `defaults` command
+- Configure auto-login via nix-darwin settings
 - Verify auto-login configuration is correctly applied
 - Test auto-login with system restart
 - Document how to disable auto-login if needed
@@ -348,11 +348,11 @@ Verify the complete bootstrap process works reliably.
 
 ### Step 1: Enhance Emrys Binary
 Modify the main emrys binary to include bootstrap functionality:
-- Add bootstrap command or automatic bootstrap after initial install
+- Automatic bootstrap after initial install
 - Implement SSH public key collection and configuration
 - Implement package installation orchestration
 - Add Ollama setup and model download
-- Integrate voice setup
+- Integrate voice setup with confirmation phrase
 - Create launch agent configuration
 
 ### Step 2: Develop TUI Application
@@ -392,18 +392,17 @@ When the user runs the enhanced emrys binary after initial nix-darwin installati
 2. Pre-flight checks (system requirements, disk space, network)
 3. Prompt user for confirmation to proceed
 4. Collect user's SSH public key for remote access
-5. Update nix-darwin configuration with required packages
-6. Run darwin-rebuild to install packages (with progress indication)
+5. Update nix-darwin configuration with required packages, SSH server, auto-login, and Jamie voice
+6. Run darwin-rebuild to install packages and apply configuration (with progress indication)
 7. Initialize Ollama and download default model
-8. Verify Jamie (Premium) voice availability, prompt to install if missing
+8. Verify Jamie (Premium) voice installation and speak a confirmation phrase
 9. Install user's public key for SSH access
 10. Build and install Emrys TUI binary
 11. Create tmux configuration
 12. Set up launch agent for auto-start
-13. Provide instructions for enabling auto-login
-14. Offer to start Emrys immediately or on next login
-15. Display success message with next steps and SSH access instructions
-16. Launch Emrys in tmux (if user confirmed immediate start)
+13. Offer to start Emrys immediately or on next login
+14. Display success message with next steps and SSH access instructions
+15. Launch Emrys in tmux (if user confirmed immediate start)
 
 ## Success Criteria
 
