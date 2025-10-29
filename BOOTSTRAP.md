@@ -43,6 +43,7 @@ Extend the nix-darwin configuration to include all packages required for Emrys o
 The emrys binary should be enhanced to:
 - Detect whether the bootstrap packages are installed
 - Update the nix-darwin configuration to include required packages
+- Configure SSH server settings via nix-darwin (enable service, disable password auth)
 - Trigger `darwin-rebuild switch` to apply the configuration
 - Verify successful installation of each required package
 - Handle installation failures gracefully with clear error messages
@@ -160,24 +161,19 @@ Configure tmux for persistent Emrys session management.
 - Document SSH setup and connection procedures
 
 #### SSH Server Configuration
-- Verify SSH server (Remote Login) is enabled on the Mac Mini
-- Provide instructions or automation to enable SSH via System Settings
-- Configure SSH server for optimal security (disable password auth, use keys only)
+- Configure SSH server via nix-darwin to enable Remote Login
+- Set SSH server for optimal security (disable password auth, use keys only)
 - Test SSH connectivity on local network
 
 #### SSH Key Setup
-- Prompt user to provide their public SSH key during bootstrap
-- Accept public key input via multiple methods:
-  - Direct paste into terminal during interactive bootstrap
-  - Read from a file path specified by user
-  - Read from clipboard if available
-  - Import from existing `~/.ssh/authorized_keys` on another machine
+- Look for `id_rsa.pub` file in the same directory as the emrys binary
+- If found, use it as the default and prompt user for confirmation
+- If not found or user declines, prompt for file path to their public SSH key
 - Validate SSH public key format before accepting
 - Add the public key to `~/.ssh/authorized_keys` with correct permissions
 - Set appropriate permissions on SSH directory and files (`chmod 700 ~/.ssh`, `chmod 600 ~/.ssh/authorized_keys`)
 - Verify the public key was added correctly
 - Provide instructions for testing SSH access from remote machine
-- Support adding multiple public keys for different devices/users
 
 ### Phase 6: Auto-Start Configuration
 
@@ -320,17 +316,16 @@ Verify the complete bootstrap process works reliably.
 - Bootstrap after system updates
 - Recovery from power outage (simulated)
 - Recovery from individual service failures
-- SSH key configuration with various input methods (paste, file, clipboard)
-- Multi-user access via SSH with different keys
+- SSH key configuration from file (id_rsa.pub in binary directory or user-specified path)
 - Voice output functionality
 - Configuration changes and reloads
 - Disk space exhaustion recovery
 
 #### Validation Checklist
 - All packages installed correctly via nix-darwin
+- SSH server enabled and configured via nix-darwin
 - Ollama service running and responsive
 - Default model downloaded and functional
-- SSH server enabled and accessible
 - User's SSH public key correctly installed in authorized_keys
 - SSH key-based authentication working from remote machine
 - TUI application starts and displays correctly
@@ -401,7 +396,7 @@ When the user runs the enhanced emrys binary after initial nix-darwin installati
 6. Run darwin-rebuild to install packages (with progress indication)
 7. Initialize Ollama and download default model
 8. Verify Jamie (Premium) voice availability, prompt to install if missing
-9. Configure SSH server and install user's public key
+9. Install user's public key for SSH access
 10. Build and install Emrys TUI binary
 11. Create tmux configuration
 12. Set up launch agent for auto-start
@@ -419,7 +414,7 @@ The bootstrap process is successful when:
 3. Ollama is running with an appropriate model downloaded
 4. Emrys TUI application launches in tmux and displays status
 5. Voice output is functional and uses Jamie (Premium) voice
-6. SSH server is enabled and user's public key is correctly installed for remote access
+6. SSH server is configured via nix-darwin and user's public key is correctly installed for remote access
 7. System auto-starts Emrys on boot/login
 8. System recovers automatically after power outages
 9. Remote SSH access to tmux session works correctly using the configured key
