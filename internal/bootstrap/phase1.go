@@ -62,11 +62,8 @@ func UpdateNixDarwinConfiguration() error {
 
 	configStr := string(content)
 
-	// Check if we already have the Phase 1 packages
-	if strings.Contains(configStr, "# Phase 1 Bootstrap Packages") {
-		fmt.Println("✓ Configuration already includes Phase 1 packages")
-		return nil
-	}
+	// Track if any changes were made
+	configChanged := false
 
 	// Find the environment.systemPackages section and add our packages
 	// We'll add them after the existing packages
@@ -111,16 +108,28 @@ func UpdateNixDarwinConfiguration() error {
 	if !strings.Contains(configStr, "services.openssh") {
 		// Insert SSH config before the closing brace
 		configStr = strings.Replace(configStr, "\n}", sshConfig+"\n}", 1)
+		configChanged = true
 	}
 
 	// Check if auto-login config already exists
 	if !strings.Contains(configStr, "Auto-login configuration") {
 		// Insert auto-login config before the closing brace
 		configStr = strings.Replace(configStr, "\n}", autoLoginConfig+"\n}", 1)
+		configChanged = true
 	}
 
-	// Replace the packages section
-	configStr = strings.Replace(configStr, packagesSection, updatedPackagesSection, 1)
+	// Check if we need to add Phase 1 packages
+	if !strings.Contains(configStr, "# Phase 1 Bootstrap Packages") {
+		// Replace the packages section
+		configStr = strings.Replace(configStr, packagesSection, updatedPackagesSection, 1)
+		configChanged = true
+	}
+
+	// If no changes were made, we're already up to date
+	if !configChanged {
+		fmt.Println("✓ Configuration already includes Phase 1 packages")
+		return nil
+	}
 
 	// Get the username from the existing configuration
 	// Look for system.primaryUser = "username"; and extract it
