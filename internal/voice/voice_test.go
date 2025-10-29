@@ -1,6 +1,7 @@
 package voice
 
 import (
+	"sync"
 	"testing"
 	"time"
 )
@@ -150,35 +151,47 @@ func TestSpeakerClose(t *testing.T) {
 	// No assertion here, just making sure Close() completes
 }
 
-func TestIsQuietHours(t *testing.T) {
-	// Test quiet hours logic
-	tests := []struct {
-		name      string
-		start     int
-		end       int
-		wantQuiet bool
-	}{
-		{
-			name:      "normal hours",
-			start:     22,
-			end:       7,
-			wantQuiet: false, // Always false in our mock
-		},
-		{
-			name:      "reverse hours",
-			start:     7,
-			end:       22,
-			wantQuiet: false,
-		},
-	}
+func TestSpeakerCloseMultipleTimes(t *testing.T) {
+	config := DefaultConfig()
+	speaker := NewSpeaker(config)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := isQuietHours(tt.start, tt.end)
-			if got != tt.wantQuiet {
-				t.Errorf("isQuietHours() = %v, want %v", got, tt.wantQuiet)
-			}
-		})
+	// First close should work
+	speaker.Close()
+
+	// Second close should not panic (handled by sync.Once)
+	speaker.Close()
+
+	// Third close for good measure
+	speaker.Close()
+
+	// Test passed if we get here without panic
+}
+
+func TestIsQuietHours(t *testing.T) {
+	// Test quiet hours logic with current time
+	// Note: This test validates the logic but results depend on current time
+	
+	// Test case 1: Quiet hours spanning midnight (22:00 to 07:00)
+	// If current hour is 23 or 0-6, should be quiet
+	hour := time.Now().Hour()
+	
+	result1 := isQuietHours(22, 7)
+	expectedQuiet1 := hour >= 22 || hour < 7
+	if result1 != expectedQuiet1 {
+		t.Errorf("isQuietHours(22, 7) = %v, expected %v (current hour: %d)", result1, expectedQuiet1, hour)
+	}
+	
+	// Test case 2: Normal quiet hours (1:00 to 5:00)
+	result2 := isQuietHours(1, 5)
+	expectedQuiet2 := hour >= 1 && hour < 5
+	if result2 != expectedQuiet2 {
+		t.Errorf("isQuietHours(1, 5) = %v, expected %v (current hour: %d)", result2, expectedQuiet2, hour)
+	}
+	
+	// Test case 3: All day (0:00 to 0:00) - edge case
+	result3 := isQuietHours(0, 0)
+	if result3 {
+		t.Error("isQuietHours(0, 0) should be false (no quiet hours)")
 	}
 }
 
@@ -279,28 +292,32 @@ func TestConcurrentAccess(t *testing.T) {
 	defer speaker.Close()
 
 	// Test concurrent access to configuration
-	done := make(chan bool)
+	var wg sync.WaitGroup
 
 	// Goroutine 1: Reading config
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for i := 0; i < 100; i++ {
 			_ = speaker.GetConfig()
 		}
-		done <- true
 	}()
 
 	// Goroutine 2: Updating config
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for i := 0; i < 100; i++ {
 			newConfig := DefaultConfig()
 			newConfig.Rate = 100 + i
 			speaker.UpdateConfig(newConfig)
 		}
-		done <- true
 	}()
 
 	// Goroutine 3: Enable/Disable
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for i := 0; i < 100; i++ {
 			if i%2 == 0 {
 				speaker.Enable()
@@ -308,11 +325,8 @@ func TestConcurrentAccess(t *testing.T) {
 				speaker.Disable()
 			}
 		}
-		done <- true
 	}()
 
 	// Wait for all goroutines
-	for i := 0; i < 3; i++ {
-		<-done
-	}
+	wg.Wait()
 }

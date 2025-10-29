@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Config holds voice output configuration
@@ -33,11 +34,13 @@ func DefaultConfig() Config {
 
 // Speaker manages voice output with message queuing
 type Speaker struct {
-	config Config
-	queue  chan string
-	wg     sync.WaitGroup
-	mu     sync.RWMutex
-	stop   chan struct{}
+	config     Config
+	queue      chan string
+	wg         sync.WaitGroup
+	mu         sync.RWMutex
+	stop       chan struct{}
+	closeOnce  sync.Once
+	closeMutex sync.Mutex
 }
 
 // NewSpeaker creates a new Speaker with the given configuration
@@ -178,17 +181,27 @@ func (s *Speaker) IsEnabled() bool {
 }
 
 // Close stops the speaker and waits for queued messages to complete
+// It is safe to call Close multiple times
 func (s *Speaker) Close() {
-	close(s.stop)
-	s.wg.Wait()
+	s.closeOnce.Do(func() {
+		close(s.stop)
+		s.wg.Wait()
+	})
 }
 
 // isQuietHours checks if the current time is within quiet hours
 func isQuietHours(start, end int) bool {
 	// Get current hour (0-23)
-	// Note: This is a placeholder. In production, we'd use time.Now().Hour()
-	// For testing purposes, we'll assume it's not quiet hours
-	return false
+	hour := time.Now().Hour()
+
+	// Handle case where quiet hours span midnight (e.g., 22:00 to 07:00)
+	if start > end {
+		// Quiet hours span midnight
+		return hour >= start || hour < end
+	}
+
+	// Normal case: quiet hours don't span midnight
+	return hour >= start && hour < end
 }
 
 // IsVoiceAvailable checks if a specific voice is available on the system
@@ -200,8 +213,18 @@ func IsVoiceAvailable(voiceName string) bool {
 		return false
 	}
 
-	// Check if the voice name appears in the output
-	return strings.Contains(string(output), voiceName)
+	// Check if the voice name appears at the start of a line
+	// Voice listing format: "VoiceName    language    # comment"
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		// Get the first field (voice name)
+		fields := strings.Fields(line)
+		if len(fields) > 0 && fields[0] == voiceName {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ListAvailableVoices returns a list of available voices on the system
