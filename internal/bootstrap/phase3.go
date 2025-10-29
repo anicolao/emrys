@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/anicolao/emrys/internal/nixdarwin"
 	"github.com/anicolao/emrys/internal/voice"
@@ -62,11 +64,9 @@ func UpdateNixDarwinConfigForVoice() error {
 	// Add voice configuration before the closing brace
 	voiceConfig := `
   # Phase 3: Voice Output Configuration
-  # Install Jamie (Premium) voice for text-to-speech
-  # Note: On macOS, voices are managed by the system.
-  # The voice needs to be installed via System Preferences > Accessibility > Spoken Content.
-  # This configuration documents the requirement.
-  # Users should manually install Jamie (Premium) voice from System Preferences.
+  # Jamie (Premium) voice is installed automatically during Phase 3 bootstrap
+  # using the macOS softwareupdate command. If automatic installation fails,
+  # the user will be guided through manual installation via System Settings.
 `
 
 	// Insert voice config before the closing brace
@@ -81,7 +81,7 @@ func UpdateNixDarwinConfigForVoice() error {
 	return nil
 }
 
-// InstallJamieVoice checks if Jamie voice is installed and provides instructions if not
+// InstallJamieVoice checks if Jamie voice is installed and installs it programmatically if not
 func InstallJamieVoice() error {
 	fmt.Println("Checking Jamie voice installation...")
 
@@ -91,34 +91,137 @@ func InstallJamieVoice() error {
 		return nil
 	}
 
-	// Jamie voice is not installed, provide instructions
+	// Jamie voice is not installed, install it programmatically
 	fmt.Println()
 	fmt.Println("⚠ Jamie voice is not installed on this system")
-	fmt.Println()
-	fmt.Println("To install Jamie (Premium) voice:")
-	fmt.Println("  1. Open System Settings (or System Preferences)")
-	fmt.Println("  2. Go to Accessibility > Spoken Content")
-	fmt.Println("  3. Click on 'System Voice' dropdown")
-	fmt.Println("  4. Select 'Manage Voices...'")
-	fmt.Println("  5. Find 'Jamie' in the list and click the download icon")
-	fmt.Println("  6. Wait for the download to complete")
+	fmt.Println("Installing Jamie voice automatically...")
 	fmt.Println()
 
-	// Ask if user wants to continue
-	if !confirmVoiceInstallation() {
-		return fmt.Errorf("Jamie voice installation required for Phase 3")
-	}
-
-	// Check again after user confirms
-	if !voice.IsVoiceAvailable(DefaultVoice) {
+	// Try to install the voice using softwareupdate
+	if err := installVoiceUsingSoftwareUpdate(); err != nil {
+		// If softwareupdate fails, fall back to manual instructions
 		fmt.Println()
-		fmt.Println("⚠ Jamie voice is still not available")
-		fmt.Println("Please install the voice and run this command again.")
-		return fmt.Errorf("Jamie voice not found")
+		fmt.Println("⚠ Automatic installation failed. Please install manually:")
+		fmt.Println()
+		fmt.Println("To install Jamie (Premium) voice:")
+		fmt.Println("  1. Open System Settings (or System Preferences)")
+		fmt.Println("  2. Go to Accessibility > Spoken Content")
+		fmt.Println("  3. Click on 'System Voice' dropdown")
+		fmt.Println("  4. Select 'Manage Voices...'")
+		fmt.Println("  5. Find 'Jamie' in the list and click the download icon")
+		fmt.Println("  6. Wait for the download to complete")
+		fmt.Println()
+
+		// Ask if user wants to continue
+		if !confirmVoiceInstallation() {
+			return fmt.Errorf("Jamie voice installation required for Phase 3")
+		}
+
+		// Check again after user confirms
+		if !voice.IsVoiceAvailable(DefaultVoice) {
+			fmt.Println()
+			fmt.Println("⚠ Jamie voice is still not available")
+			fmt.Println("Please install the voice and run this command again.")
+			return fmt.Errorf("Jamie voice not found")
+		}
 	}
 
 	fmt.Println("✓ Jamie voice is now available")
 	return nil
+}
+
+// installVoiceUsingSoftwareUpdate installs Jamie voice using softwareupdate command
+func installVoiceUsingSoftwareUpdate() error {
+	fmt.Println("Searching for Jamie voice in available updates...")
+
+	// First, list all available updates to find the Jamie voice package
+	cmd := exec.Command("softwareupdate", "--list")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to list software updates: %w (output: %s)", err, string(output))
+	}
+
+	// Parse the output to find Jamie voice package
+	lines := strings.Split(string(output), "\n")
+	var jamiePackage string
+	for _, line := range lines {
+		// Look for lines containing "Jamie" and "voice" (case-insensitive)
+		lowerLine := strings.ToLower(line)
+		if strings.Contains(lowerLine, "jamie") && (strings.Contains(lowerLine, "voice") || strings.Contains(lowerLine, "en-gb") || strings.Contains(lowerLine, "en_gb")) {
+			// Extract the package name (usually starts with * or -)
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "*") || strings.HasPrefix(line, "-") {
+				// Remove the leading * or - and trim
+				jamiePackage = strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(line, "*"), "-"))
+				break
+			}
+		}
+	}
+
+	if jamiePackage == "" {
+		// Try alternative approach: look for the voice directly
+		return installVoiceDirectly()
+	}
+
+	fmt.Printf("Found Jamie voice package: %s\n", jamiePackage)
+	fmt.Println("Installing Jamie voice (this may take several minutes)...")
+	fmt.Println("Note: You may be asked for your password (sudo access required)")
+	fmt.Println()
+
+	// Install the voice package
+	// Note: softwareupdate may require sudo
+	installCmd := exec.Command("sudo", "softwareupdate", "--install", jamiePackage, "--verbose")
+	installCmd.Stdout = os.Stdout
+	installCmd.Stderr = os.Stderr
+	installCmd.Stdin = os.Stdin
+
+	if err := installCmd.Run(); err != nil {
+		return fmt.Errorf("failed to install Jamie voice: %w", err)
+	}
+
+	// Wait a moment for the voice to be registered
+	fmt.Println()
+	fmt.Println("Waiting for voice to be registered...")
+	time.Sleep(2 * time.Second)
+
+	// Verify the voice is now available
+	if voice.IsVoiceAvailable(DefaultVoice) {
+		fmt.Println("✓ Jamie voice installed successfully")
+		return nil
+	}
+
+	return fmt.Errorf("voice package installed but Jamie voice not detected")
+}
+
+// installVoiceDirectly attempts to install the voice using direct package identifier
+func installVoiceDirectly() error {
+	// Try common Jamie voice package identifiers
+	possiblePackages := []string{
+		"com.apple.voice.compact.en-GB.Jamie",
+		"com.apple.voice.premium.en-GB.Jamie",
+		"VoiceOver_enGB_Jamie",
+	}
+
+	for _, pkg := range possiblePackages {
+		fmt.Printf("Trying to install: %s\n", pkg)
+
+		cmd := exec.Command("sudo", "softwareupdate", "--install", pkg)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+
+		if err := cmd.Run(); err == nil {
+			// Wait for voice to be registered
+			time.Sleep(2 * time.Second)
+
+			if voice.IsVoiceAvailable(DefaultVoice) {
+				fmt.Println("✓ Jamie voice installed successfully")
+				return nil
+			}
+		}
+	}
+
+	return fmt.Errorf("could not find Jamie voice package")
 }
 
 // confirmVoiceInstallation prompts the user to confirm voice installation
