@@ -101,13 +101,14 @@ func UpdateNixDarwinConfiguration() error {
     };
   };`
 
-	// Also add auto-login configuration (commented out by default for security)
+	// Also add auto-login configuration for dedicated hardware
+	// This enables automatic recovery after power outages
 	autoLoginConfig := `
-  # Auto-login configuration (uncomment to enable)
-  # WARNING: Only enable on physically secure, dedicated hardware
-  # system.defaults.loginwindow = {
-  #   autoLoginUser = "__EMRYS_USERNAME__";
-  # };`
+  # Auto-login configuration for dedicated Mac Mini
+  # Emrys is designed to run on dedicated, physically secure hardware
+  system.defaults.loginwindow = {
+    autoLoginUser = "__EMRYS_USERNAME__";
+  };`
 
 	// Check if SSH config already exists
 	if !strings.Contains(configStr, "services.openssh") {
@@ -124,6 +125,33 @@ func UpdateNixDarwinConfiguration() error {
 	// Replace the packages section
 	configStr = strings.Replace(configStr, packagesSection, updatedPackagesSection, 1)
 
+	// Get the username from the existing configuration
+	// Look for system.primaryUser = "username"; and extract it
+	username := ""
+	lines := strings.Split(configStr, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "system.primaryUser") {
+			// Extract username from: system.primaryUser = "username";
+			parts := strings.Split(line, "\"")
+			if len(parts) >= 2 {
+				username = parts[1]
+				break
+			}
+		}
+	}
+
+	// If we couldn't find it in the config, get it from the environment
+	if username == "" {
+		username = os.Getenv("USER")
+		if username == "" {
+			// Fallback to getting username from home directory path
+			username = filepath.Base(homeDir)
+		}
+	}
+
+	// Replace the username placeholder in auto-login configuration
+	configStr = strings.Replace(configStr, "__EMRYS_USERNAME__", username, -1)
+
 	// Write the updated configuration
 	if err := os.WriteFile(configPath, []byte(configStr), 0644); err != nil {
 		return fmt.Errorf("failed to write configuration: %w", err)
@@ -139,14 +167,8 @@ func ApplyConfiguration() error {
 	fmt.Println("Note: This may take several minutes and will require sudo access")
 	fmt.Println()
 
-	// Source nix and run darwin-rebuild
-	applyCmd := `
-		set -e
-		if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-			. '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-		fi
-		darwin-rebuild switch --flake ~/.nixpkgs#emrys
-	`
+	// Run darwin-rebuild switch
+	applyCmd := `darwin-rebuild switch --flake ~/.nixpkgs#emrys`
 
 	cmd := exec.Command("sh", "-c", applyCmd)
 	cmd.Stdout = os.Stdout

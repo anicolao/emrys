@@ -35,10 +35,10 @@ Automatically configures the SSH server via nix-darwin with:
 
 ### Auto-Login Configuration
 
-Provides auto-login configuration (commented out by default for security):
-- Can be enabled by uncommenting the configuration
-- Replaces `__EMRYS_USERNAME__` with actual username
-- Includes security warnings in comments
+Configures auto-login for the dedicated Mac Mini (enabled by default):
+- Auto-login is enabled for unattended operation and power outage recovery
+- Replaces `__EMRYS_USERNAME__` with actual username from configuration
+- Designed for dedicated, physically secure hardware
 
 ## Usage
 
@@ -103,12 +103,9 @@ Verifying package installation...
 ═══════════════════════════════════════
 ✓ Phase 1 Bootstrap Complete!
 ═══════════════════════════════════════
-
-Next steps:
-  - Restart your terminal to ensure all packages are in your PATH
-  - Run 'ollama serve' to start the Ollama service
-  - Run 'ollama pull llama3.2' to download a default model
 ```
+
+Phase 1 is now complete. Phase 2 will automatically configure Ollama service and download models.
 
 ## Implementation Details
 
@@ -123,16 +120,17 @@ The `UpdateNixDarwinConfiguration()` function:
 2. Checks if Phase 1 packages are already included (idempotent)
 3. Adds Phase 1 packages to the `environment.systemPackages` section
 4. Adds SSH server configuration if not already present
-5. Adds auto-login configuration (commented out) if not already present
-6. Writes the updated configuration back to disk
+5. Adds auto-login configuration (enabled by default)
+6. Extracts username from existing configuration or environment
+7. Replaces username placeholder in auto-login configuration
+8. Writes the updated configuration back to disk
 
 ### Configuration Application
 
 The `ApplyConfiguration()` function:
-1. Sources the Nix environment
-2. Runs `darwin-rebuild switch --flake ~/.nixpkgs#emrys`
-3. Handles sudo password prompts
-4. Displays command output to the user
+1. Runs `darwin-rebuild switch --flake ~/.nixpkgs#emrys`
+2. Handles sudo password prompts
+3. Displays command output to the user
 
 ### Package Verification
 
@@ -167,10 +165,11 @@ go test ./internal/bootstrap/... -v
 
 ### Auto-Login
 
-- Auto-login is disabled by default (configuration is commented out)
-- Security warnings are included in the configuration comments
-- Should only be enabled on physically secure, dedicated hardware
-- May have implications for FileVault encryption
+- Auto-login is enabled by default for dedicated, physically secure hardware
+- Designed for unattended operation and automatic recovery from power outages
+- Username is automatically extracted from the existing nix-darwin configuration
+- Should only be used on physically secure Mac Mini systems
+- May have implications for FileVault encryption (see BOOTSTRAP.md Phase 7)
 
 ## Next Steps
 
@@ -181,7 +180,7 @@ After Phase 1 is complete, the next phases are:
 - **Phase 4**: TUI application development using Bubbletea
 - **Phase 5**: Tmux session management
 - **Phase 6**: Auto-start configuration
-- **Phase 7**: Auto-login configuration (enabling the commented configuration)
+- **Phase 7**: Auto-login testing and FileVault compatibility
 - **Phase 8**: Power outage recovery testing
 
 ## Troubleshooting
