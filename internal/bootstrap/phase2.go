@@ -225,33 +225,11 @@ func DownloadModel(modelName string) error {
 		return fmt.Errorf("failed to start model download: %w", err)
 	}
 
-	// Read and display output in real-time
-	go func() {
-		buf := make([]byte, 1024)
-		for {
-			n, err := stdout.Read(buf)
-			if n > 0 {
-				fmt.Print(string(buf[:n]))
-			}
-			if err != nil {
-				break
-			}
-		}
-	}()
+	// Read and display output in real-time using io.Copy
+	go io.Copy(os.Stdout, stdout)
 
-	// Read and display errors in real-time
-	go func() {
-		buf := make([]byte, 1024)
-		for {
-			n, err := stderr.Read(buf)
-			if n > 0 {
-				fmt.Fprint(os.Stderr, string(buf[:n]))
-			}
-			if err != nil {
-				break
-			}
-		}
-	}()
+	// Read and display errors in real-time using io.Copy
+	go io.Copy(os.Stderr, stderr)
 
 	// Wait for the command to complete
 	if err := cmd.Wait(); err != nil {
