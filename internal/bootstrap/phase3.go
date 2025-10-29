@@ -131,83 +131,34 @@ func InstallJamieVoice() error {
 	return nil
 }
 
-// installVoiceUsingAppleScript opens System Settings to the voice download section using AppleScript
+// installVoiceUsingAppleScript opens VoiceOver Utility to install Jamie voice using AppleScript
 func installVoiceUsingAppleScript() error {
-	fmt.Println("Opening System Settings to download Jamie voice...")
+	fmt.Println("Opening VoiceOver Utility to download Jamie voice...")
 
-	// Detect macOS version to determine which settings app to use
-	macOSVersion, err := getMacOSVersion()
-	if err != nil {
-		return fmt.Errorf("failed to detect macOS version: %w", err)
-	}
-
-	// macOS 13 (Ventura) and later use "System Settings", earlier versions use "System Preferences"
-	var appleScriptCode string
-	if macOSVersion >= 13 {
-		// macOS 13+ (Ventura and later) - System Settings
-		appleScriptCode = `
-		tell application "System Settings"
-			activate
-			delay 1
-		end tell
-		
-		tell application "System Events"
-			tell process "System Settings"
-				-- Navigate to Accessibility
-				try
-					click button "Accessibility" of scroll area 1 of window 1
-					delay 1
-					
-					-- Navigate to Spoken Content
-					click button "Spoken Content" of scroll area 1 of group 1 of window 1
-					delay 1
-				on error errMsg
-					-- If navigation fails, just open to main Accessibility pane
-					log "Navigation error: " & errMsg
-				end try
-			end tell
-		end tell
-		`
-	} else {
-		// macOS 12 and earlier - System Preferences
-		appleScriptCode = `
-		tell application "System Preferences"
-			activate
-			reveal pane id "com.apple.preference.universalaccess"
-			delay 1
-		end tell
-		
-		tell application "System Events"
-			tell process "System Preferences"
-				try
-					-- Click on Speech section
-					click button "Speech" of window 1
-					delay 1
-				on error errMsg
-					log "Navigation error: " & errMsg
-				end try
-			end tell
-		end tell
-		`
-	}
+	// The VoiceOver Utility is where voices are actually installed
+	appleScriptCode := `
+	tell application "VoiceOver Utility"
+		activate
+	end tell
+	`
 
 	// Execute the AppleScript
 	cmd := exec.Command("osascript", "-e", appleScriptCode)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to execute AppleScript: %w (output: %s)", err, string(output))
+		return fmt.Errorf("failed to open VoiceOver Utility: %w (output: %s)", err, string(output))
 	}
 
 	fmt.Println()
-	fmt.Println("✓ System Settings opened to Accessibility section")
+	fmt.Println("✓ VoiceOver Utility opened")
 	fmt.Println()
-	fmt.Println("To complete the installation:")
-	fmt.Println("  1. In the opened window, navigate to 'Spoken Content' (if not already there)")
-	fmt.Println("  2. Click on the 'System Voice' dropdown")
-	fmt.Println("  3. Click 'Manage Voices...' or 'Customize...'")
-	fmt.Println("  4. Find 'Jamie' in the list (under English (United Kingdom))")
-	fmt.Println("  5. Click the download icon next to Jamie")
-	fmt.Println("  6. Wait for the download to complete (may take several minutes)")
+	fmt.Println("To install Jamie voice:")
+	fmt.Println("  1. In the VoiceOver Utility window, go to the 'Speech' section")
+	fmt.Println("  2. Click on the 'Voices' tab")
+	fmt.Println("  3. Find 'Jamie' in the voice list (under English (United Kingdom))")
+	fmt.Println("  4. Click the download icon (cloud with down arrow) next to Jamie")
+	fmt.Println("  5. Wait for the download to complete (may take several minutes)")
+	fmt.Println("  6. Once downloaded, you can close the VoiceOver Utility")
 	fmt.Println()
 
 	return nil
