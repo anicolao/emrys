@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/anicolao/emrys/internal/nixdarwin"
 )
 
 // Phase1Packages are the packages required for Phase 1 of the bootstrap
@@ -161,28 +163,6 @@ func UpdateNixDarwinConfiguration() error {
 	return nil
 }
 
-// ApplyConfiguration applies the updated nix-darwin configuration
-func ApplyConfiguration() error {
-	fmt.Println("Applying nix-darwin configuration...")
-	fmt.Println("Note: This may take several minutes and will require sudo access")
-	fmt.Println()
-
-	// Run darwin-rebuild switch
-	applyCmd := `darwin-rebuild switch --flake ~/.nixpkgs#emrys`
-
-	cmd := exec.Command("sh", "-c", applyCmd)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to apply configuration: %w", err)
-	}
-
-	fmt.Println("✓ Configuration applied successfully")
-	return nil
-}
-
 // VerifyPackageInstallation verifies that all Phase 1 packages are installed
 func VerifyPackageInstallation() error {
 	fmt.Println("Verifying package installation...")
@@ -237,7 +217,7 @@ func RunPhase1() error {
 
 	// Step 2: Apply the configuration
 	fmt.Println("Step 2: Applying configuration...")
-	if err := ApplyConfiguration(); err != nil {
+	if err := nixdarwin.ApplyConfiguration(); err != nil {
 		return fmt.Errorf("failed to apply configuration: %w", err)
 	}
 	fmt.Println()
