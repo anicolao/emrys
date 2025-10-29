@@ -92,6 +92,12 @@ func UpdateNixDarwinConfiguration() error {
     jq
   ];`
 
+	// Add SSH server configuration for remote access
+	sshConfig := `
+  # SSH server configuration for remote access
+  # Enable Remote Login in macOS
+  services.openssh.enable = true;`
+
 	// Also add auto-login configuration for dedicated hardware
 	// This enables automatic recovery after power outages
 	autoLoginConfig := `
@@ -100,6 +106,12 @@ func UpdateNixDarwinConfiguration() error {
   system.defaults.loginwindow = {
     autoLoginUser = "__EMRYS_USERNAME__";
   };`
+
+	// Check if SSH config already exists
+	if !strings.Contains(configStr, "services.openssh") {
+		// Insert SSH config before the closing brace
+		configStr = strings.Replace(configStr, "\n}", sshConfig+"\n}", 1)
+	}
 
 	// Check if auto-login config already exists
 	if !strings.Contains(configStr, "Auto-login configuration") {

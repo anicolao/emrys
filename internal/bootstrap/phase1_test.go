@@ -120,6 +120,11 @@ func TestUpdateNixDarwinConfiguration(t *testing.T) {
 		t.Error("Updated configuration doesn't contain Phase 1 comment marker")
 	}
 
+	// Verify SSH configuration was added
+	if !contains(updatedStr, "services.openssh.enable") {
+		t.Error("Updated configuration doesn't contain SSH configuration")
+	}
+
 	// Verify auto-login configuration was added and is enabled (not commented out)
 	if !contains(updatedStr, "system.defaults.loginwindow") {
 		t.Error("Updated configuration doesn't contain auto-login configuration")
