@@ -208,20 +208,28 @@ func copyFile(src, dst string) error {
 // ApplyConfiguration applies the nix-darwin configuration
 func ApplyConfiguration() error {
 	fmt.Println("Applying nix-darwin configuration...")
+	fmt.Println("Note: This may take several minutes and will require sudo access")
+	fmt.Println()
 
-	// Source nix and run darwin-rebuild
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get home directory: %w", err)
+	}
+
+	// Source nix and run darwin-rebuild with sudo (system activation requires root)
 	applyCmd := `
 		set -e
 		if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
 			. '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 		fi
-		darwin-rebuild switch
+		sudo darwin-rebuild switch --flake ~/.nixpkgs#emrys
 	`
 
 	cmd := exec.Command("sh", "-c", applyCmd)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
+	cmd.Dir = homeDir
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to apply configuration: %w", err)
