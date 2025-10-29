@@ -22,23 +22,23 @@ func main() {
 	if nixdarwin.IsInstalled() {
 		fmt.Println("✓ nix-darwin is already installed!")
 		fmt.Println()
-		
+
 		// Check if Phase 1 bootstrap is complete
 		if !bootstrap.IsPhase1Complete() {
 			fmt.Println("⚠ Phase 1 bootstrap is not yet complete.")
 			fmt.Println()
-			
+
 			if !confirm("Would you like to run Phase 1 bootstrap now?") {
 				fmt.Println("Bootstrap cancelled. Run this command again when ready.")
 				return
 			}
-			
+
 			fmt.Println()
 			if err := bootstrap.RunPhase1(); err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 				os.Exit(1)
 			}
-			
+
 			fmt.Println("Next steps:")
 			fmt.Println("  - Restart your terminal to ensure all packages are in your PATH")
 			fmt.Println("  - Run 'ollama serve' to start the Ollama service")
@@ -46,7 +46,7 @@ func main() {
 			fmt.Println()
 			return
 		}
-		
+
 		fmt.Println("✓ Phase 1 bootstrap is complete!")
 		fmt.Println()
 		fmt.Println("Emrys is ready to use.")
