@@ -24,7 +24,7 @@ func TestGetMissingPackages(t *testing.T) {
 	// This test just verifies the function runs without crashing
 	missing := GetMissingPackages()
 	t.Logf("Missing packages: %v", missing)
-	
+
 	// The result should be a valid slice (even if empty)
 	if missing == nil {
 		t.Error("GetMissingPackages returned nil instead of a slice")
@@ -144,8 +144,8 @@ func TestUpdateNixDarwinConfiguration(t *testing.T) {
 
 // Helper function to check if a string contains a substring
 func contains(s, substr string) bool {
-	return len(s) > 0 && len(substr) > 0 && 
-		   (s == substr || len(s) >= len(substr) && containsHelper(s, substr))
+	return len(s) > 0 && len(substr) > 0 &&
+		(s == substr || len(s) >= len(substr) && containsHelper(s, substr))
 }
 
 func containsHelper(s, substr string) bool {
