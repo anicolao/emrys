@@ -17,11 +17,8 @@
   # Enable nix flakes and new nix command
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  # Auto upgrade nix package and the daemon service
-  services.nix-daemon.enable = true;
-
-  # Enable Touch ID for sudo
-  security.pam.enableSudoTouchIdAuth = true;
+  # Enable Touch ID for sudo (using new option name)
+  security.pam.services.sudo_local.touchIdAuth = true;
 
   # Basic system packages
   environment.systemPackages = with pkgs; [
