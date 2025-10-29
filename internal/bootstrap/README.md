@@ -19,10 +19,12 @@ The Phase 1 implementation is organized in the `internal/bootstrap` package:
 
 Phase 1 installs the following packages via nix-darwin:
 
-1. **ollama** - Local AI inference engine for running language models
-2. **tmux** - Terminal multiplexer for persistent sessions  
-3. **go** - Go programming language for building Emrys
-4. **jq** - JSON processing utility for configuration management
+1. **ollama** - Local AI inference engine for running language models (latest stable version from nixpkgs)
+2. **tmux** - Terminal multiplexer for persistent sessions (latest stable version from nixpkgs)
+3. **go** - Go programming language for building Emrys (latest stable version from nixpkgs)
+4. **jq** - JSON processing utility for configuration management (latest stable version from nixpkgs)
+
+**Note:** All packages are installed from nixpkgs-unstable and are automatically kept up-to-date through nix-darwin. Ollama models are managed separately and can be downloaded after installation.
 
 ### SSH Server Configuration
 
@@ -195,7 +197,7 @@ If packages are not found in PATH after installation:
 
 If `darwin-rebuild` fails:
 1. Check the error message for specific issues
-2. Verify the configuration syntax: `nix flake check ~/.nixpkgs`
+2. Verify the configuration syntax: `nix flake check ~/.nixpkgs#emrys`
 3. Try rebuilding with verbose output: `darwin-rebuild switch --flake ~/.nixpkgs#emrys --show-trace`
 
 ### Permission errors
