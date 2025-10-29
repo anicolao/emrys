@@ -188,10 +188,19 @@ func TestIsQuietHours(t *testing.T) {
 		t.Errorf("isQuietHours(1, 5) = %v, expected %v (current hour: %d)", result2, expectedQuiet2, hour)
 	}
 	
-	// Test case 3: All day (0:00 to 0:00) - edge case
+	// Test case 3: Same start and end (0:00 to 0:00) - edge case
+	// When start equals end, no time period is selected, so always not quiet
 	result3 := isQuietHours(0, 0)
+	// This should always be false since hour >= 0 && hour < 0 is always false
 	if result3 {
-		t.Error("isQuietHours(0, 0) should be false (no quiet hours)")
+		t.Error("isQuietHours(0, 0) should be false (no time period selected)")
+	}
+	
+	// Test case 4: Same non-zero start and end (12:00 to 12:00)
+	result4 := isQuietHours(12, 12)
+	// This should always be false since hour >= 12 && hour < 12 is always false
+	if result4 {
+		t.Error("isQuietHours(12, 12) should be false (no time period selected)")
 	}
 }
 
