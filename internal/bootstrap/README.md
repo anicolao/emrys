@@ -340,12 +340,268 @@ go test ./internal/bootstrap/... -v
 - Should only be used on physically secure Mac Mini systems
 - May have implications for FileVault encryption (see BOOTSTRAP.md Phase 7)
 
+## Phase 3: Voice Output Configuration
+
+Phase 3 implements voice output configuration with the Jamie (Premium) voice, as specified in BOOTSTRAP.md.
+
+### Features
+
+#### Voice Output Module
+
+Phase 3 creates a comprehensive voice output system:
+
+1. **Speaker Module** - Thread-safe voice output with message queuing
+2. **Configuration Management** - Customizable voice settings (rate, volume, quiet hours)
+3. **Voice Testing** - Test utility to verify voice output is working
+4. **Fallback Handling** - Graceful degradation when voice is unavailable
+
+#### Jamie Voice Installation
+
+Phase 3 guides users through installing the Jamie (Premium) voice:
+
+1. **Voice Detection** - Checks if Jamie voice is available
+2. **Installation Instructions** - Provides step-by-step guide for manual installation
+3. **Verification** - Confirms voice is properly installed
+4. **Testing** - Speaks a confirmation phrase to verify functionality
+
+#### Voice Output Features
+
+The voice module provides:
+
+1. **Message Queuing** - Prevents overlapping speech by queuing messages
+2. **Speech Rate Control** - Configurable words per minute (default: 200)
+3. **Volume Control** - Volume setting from 0.0 to 1.0 (default: 0.7)
+4. **Quiet Hours** - Optional time-based silence mode
+5. **Enable/Disable** - Runtime control of voice output
+6. **Voice Selection** - Support for any macOS voice (default: Jamie)
+
+### Usage
+
+After Phase 2 is complete, running the `emrys` binary will:
+
+1. Detect if Phase 3 is complete
+2. Prompt the user to proceed with Phase 3 bootstrap if needed
+3. Update nix-darwin configuration with voice documentation
+4. Apply the configuration
+5. Check for Jamie voice installation
+6. Provide installation instructions if needed
+7. List all available voices on the system
+8. Create voice configuration file
+9. Test voice output with a confirmation message
+10. Display success confirmation
+
+Example:
+
+```bash
+./emrys
+```
+
+Output when Phase 3 is needed:
+
+```
+╔════════════════════════════════════════╗
+║           Emrys Setup                  ║
+║  Your Personal AI Assistant on macOS  ║
+╚════════════════════════════════════════╝
+
+✓ nix-darwin is already installed!
+
+✓ Phase 1 bootstrap is complete!
+
+✓ Phase 2 bootstrap is complete!
+
+⚠ Phase 3 bootstrap is not yet complete.
+
+Would you like to run Phase 3 bootstrap now? (y/n): y
+
+═══════════════════════════════════════
+  Phase 3: Voice Output Configuration
+═══════════════════════════════════════
+
+Step 1: Updating nix-darwin configuration...
+✓ Updated configuration at /Users/username/.nixpkgs/darwin-configuration.nix
+
+Step 2: Applying configuration...
+Applying nix-darwin configuration...
+✓ Configuration applied successfully
+
+Step 3: Installing Jamie voice...
+Checking Jamie voice installation...
+
+⚠ Jamie voice is not installed on this system
+
+To install Jamie (Premium) voice:
+  1. Open System Settings (or System Preferences)
+  2. Go to Accessibility > Spoken Content
+  3. Click on 'System Voice' dropdown
+  4. Select 'Manage Voices...'
+  5. Find 'Jamie' in the list and click the download icon
+  6. Wait for the download to complete
+
+Have you installed the Jamie voice? (y/n): y
+✓ Jamie voice is now available
+
+Step 4: Listing available voices...
+Available voices on this system:
+
+  1. Alex
+  2. Fred
+  3. Jamie ✓ (default)
+  4. Samantha
+  ...
+
+Step 5: Creating voice configuration...
+✓ Created voice configuration at /Users/username/.config/emrys/voice.conf
+
+Step 6: Testing voice output...
+Testing voice output...
+
+Speaking: "Hello! I am Emrys, your personal AI assistant. Voice output is working correctly."
+
+✓ Voice output test successful
+
+═══════════════════════════════════════
+✓ Phase 3 Bootstrap Complete!
+═══════════════════════════════════════
+
+Voice configuration saved to: /Users/username/.config/emrys/voice.conf
+Default voice: Jamie
+
+Voice output features:
+  - Message queuing to prevent overlap
+  - Configurable speech rate and volume
+  - Quiet hours support
+  - Enable/disable voice output on demand
+
+Next steps:
+  - Phase 4 will set up the TUI application
+  - Phase 5 will configure tmux session management
+```
+
+### Voice Configuration File
+
+The voice configuration file is created at `~/.config/emrys/voice.conf`:
+
+```conf
+# Emrys Voice Output Configuration
+# This file contains settings for text-to-speech output
+
+# Enable or disable voice output (true/false)
+enabled = true
+
+# Voice name (e.g., Jamie, Samantha, Alex)
+voice = Jamie
+
+# Speech rate in words per minute (typical range: 150-250)
+rate = 200
+
+# Volume from 0.0 to 1.0 (note: controlled via system volume)
+volume = 0.7
+
+# Enable quiet hours (true/false)
+quiet_hours = false
+
+# Quiet hours start (24-hour format, 0-23)
+quiet_start = 22
+
+# Quiet hours end (24-hour format, 0-23)
+quiet_end = 7
+```
+
+### Testing
+
+Phase 3 includes comprehensive tests in `phase3_test.go`:
+
+- `TestGetVoiceConfigPath`: Tests config path generation
+- `TestCreateVoiceConfig`: Tests config file creation with idempotency
+- `TestUpdateNixDarwinConfigForVoice`: Tests nix-darwin config updates
+- `TestIsPhase3Complete`: Tests Phase 3 completion detection
+- `TestDefaultVoiceConstant`: Verifies default voice is Jamie
+- `TestListAvailableVoices`: Tests voice listing (macOS only)
+- `TestTestVoiceOutput`: Tests voice output (macOS only)
+- `TestCreateVoiceConfigDirectory`: Tests config directory creation
+- `TestVoiceConfigPermissions`: Tests file permissions
+
+The voice module tests in `voice_test.go`:
+
+- `TestDefaultConfig`: Tests default configuration values
+- `TestNewSpeaker`: Tests speaker creation
+- `TestSpeakerEnableDisable`: Tests enable/disable functionality
+- `TestSpeakerUpdateConfig`: Tests configuration updates
+- `TestSpeakerQueueing`: Tests message queuing
+- `TestSpeakerDisabledNoOutput`: Tests disabled output
+- `TestSpeakerClose`: Tests graceful shutdown
+- `TestIsQuietHours`: Tests quiet hours logic
+- `TestConfigValidation`: Tests configuration validation
+- `TestConcurrentAccess`: Tests thread safety
+
+Run tests with:
+
+```bash
+go test ./internal/bootstrap/... -v
+go test ./internal/voice/... -v
+```
+
+### Voice Module API
+
+The voice module provides a comprehensive API for voice output:
+
+```go
+import "github.com/anicolao/emrys/internal/voice"
+
+// Create a speaker with default configuration
+config := voice.DefaultConfig()
+speaker := voice.NewSpeaker(config)
+defer speaker.Close()
+
+// Speak a message asynchronously (queued)
+speaker.Speak("Hello, world!")
+
+// Speak a message synchronously (blocks until complete)
+err := speaker.SpeakSync("This will wait until spoken")
+
+// Update configuration
+newConfig := config
+newConfig.Rate = 150
+speaker.UpdateConfig(newConfig)
+
+// Enable/disable voice output
+speaker.Disable()
+speaker.Enable()
+
+// Check if enabled
+if speaker.IsEnabled() {
+    speaker.Speak("Voice is enabled")
+}
+```
+
+Utility functions:
+
+```go
+// Check if a voice is available
+if voice.IsVoiceAvailable("Jamie") {
+    fmt.Println("Jamie voice is installed")
+}
+
+// List all available voices
+voices, err := voice.ListAvailableVoices()
+if err == nil {
+    for _, v := range voices {
+        fmt.Println(v)
+    }
+}
+
+// Test voice output
+err := voice.Test("Jamie")
+if err != nil {
+    fmt.Printf("Voice test failed: %v\n", err)
+}
+```
+
 ## Next Steps
 
-After Phase 1 is complete, the next phases are:
+After Phase 3 is complete, the next phases are:
 
-- **Phase 2**: Ollama setup and configuration (model download, service configuration)
-- **Phase 3**: Voice output configuration (Jamie voice installation and testing)
 - **Phase 4**: TUI application development using Bubbletea
 - **Phase 5**: Tmux session management
 - **Phase 6**: Auto-start configuration
@@ -415,6 +671,57 @@ If model verification fails after download:
 4. Ensure sufficient RAM is available (models require significant memory)
 5. Check system logs for GPU/Metal-related errors on Apple Silicon
 
+### Phase 3 Issues
+
+#### Jamie voice not found
+
+If Jamie voice is not available:
+1. Open System Settings (or System Preferences on older macOS)
+2. Navigate to Accessibility > Spoken Content
+3. Click on "System Voice" dropdown
+4. Select "Manage Voices..."
+5. Find "Jamie" in the list (may be under English or English (United Kingdom))
+6. Click the download icon next to Jamie
+7. Wait for download to complete (can be several hundred MB)
+8. Verify installation: `say -v Jamie "Test"`
+
+#### Voice test fails
+
+If voice output test fails:
+1. Check that 'say' command is available: `which say`
+2. Test the say command manually: `say "test"`
+3. Check system audio output is working
+4. Verify volume is not muted
+5. Try a different voice: `say -v Alex "test"`
+6. Check System Settings > Sound > Output
+
+#### Voice output not working in application
+
+If voice doesn't work from the application:
+1. Check voice configuration: `cat ~/.config/emrys/voice.conf`
+2. Verify enabled is set to true
+3. Check that quiet hours are not active
+4. Test voice manually: `say -v Jamie "test"`
+5. Check application has permission to play audio
+6. Review application logs for error messages
+
+#### Permission denied errors
+
+If you get permission errors:
+1. Check config directory exists: `ls -la ~/.config/emrys/`
+2. Verify file permissions: `ls -la ~/.config/emrys/voice.conf`
+3. Ensure you have write access to home directory
+4. Try creating the directory manually: `mkdir -p ~/.config/emrys`
+
+#### Voice quality issues
+
+If voice sounds distorted or wrong:
+1. Check system volume is not too high (causes distortion)
+2. Try different speech rate in voice.conf (lower rate: 150-180)
+3. Verify the correct voice is being used: `say -v ? | grep Jamie`
+4. Test other voices to isolate the issue
+5. Restart audio service: `sudo killall coreaudiod`
+
 ## Configuration File Locations
 
 ### Phase 1
@@ -428,3 +735,9 @@ If model verification fails after download:
 - Ollama logs: `~/Library/Logs/ollama.log`
 - Ollama error logs: `~/Library/Logs/ollama-error.log`
 - Ollama models: `~/.ollama/models/`
+
+### Phase 3
+- Voice configuration: `~/.config/emrys/voice.conf`
+- nix-darwin config (updated): `~/.nixpkgs/darwin-configuration.nix`
+- System voices: `/System/Library/Speech/Voices/` (read-only)
+- Downloaded voices: `~/Library/Speech/Voices/` (user-installed)
