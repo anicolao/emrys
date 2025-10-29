@@ -145,14 +145,20 @@ func InstallNixDarwinWithFlake(configContent, flakeContent string) error {
 	fmt.Printf("✓ Configuration written to %s\n", destConfig)
 	fmt.Printf("✓ Flake written to %s\n", destFlake)
 
+	fmt.Println()
+	fmt.Println("Running nix-darwin installation...")
+	fmt.Println("Note: You will be asked for your password (sudo required for system activation)")
+	fmt.Println()
+
 	// Run nix-darwin installation using the flake-based installer
 	// We need to source nix before running nix commands
+	// System activation requires root privileges, so we use sudo
 	installCmd := `
 		set -e
 		if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
 			. '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 		fi
-		nix run nix-darwin -- switch --flake ~/.nixpkgs#emrys
+		sudo nix run nix-darwin -- switch --flake ~/.nixpkgs#emrys
 	`
 
 	cmd := exec.Command("sh", "-c", installCmd)
