@@ -62,10 +62,10 @@ func UpdateNixDarwinConfiguration() error {
 		if os.IsNotExist(err) {
 			// File doesn't exist, use the embedded template
 			fmt.Println("Configuration file not found, using embedded template...")
-			
+
 			// Get the embedded configuration
 			configStr = config.DefaultNixDarwinConfig
-			
+
 			// Get the current username to set as system.primaryUser
 			username := os.Getenv("USER")
 			if username == "" {
@@ -75,7 +75,7 @@ func UpdateNixDarwinConfiguration() error {
 			if username == "" {
 				return fmt.Errorf("failed to determine username")
 			}
-			
+
 			// Replace the username placeholder in the configuration
 			configStr = strings.Replace(configStr, "__EMRYS_USERNAME__", username, -1)
 		} else {
