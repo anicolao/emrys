@@ -73,7 +73,7 @@ func BuildTUIBinary() error {
 # This script launches the Emrys TUI application
 
 echo "Launching Emrys TUI..."
-exec go run %s/cmd/emrys --tui
+exec go run "%s/cmd/emrys" --tui
 `, cwd)
 		
 		if err := os.WriteFile(tuiBinaryPath, []byte(scriptContent), 0755); err != nil {

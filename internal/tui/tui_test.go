@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -329,7 +330,7 @@ func TestMultipleLogEntries(t *testing.T) {
 
 	// Add more than 10 logs to test the limit in renderLogsView
 	for i := 0; i < 15; i++ {
-		model.AddLog("INFO", "Log message "+string(rune('A'+i)))
+		model.AddLog("INFO", fmt.Sprintf("Log message %d", i))
 	}
 
 	if len(model.logs) != 15 {

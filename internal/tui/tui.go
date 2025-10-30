@@ -123,12 +123,11 @@ func (m Model) renderHeader() string {
 		Bold(true).
 		Foreground(lipgloss.Color("86")).
 		Background(lipgloss.Color("236")).
-		Padding(0, 1)
+		Padding(0, 1).
+		Width(m.width)
 	
-	title := titleStyle.Render("╔════════════════════════════════════════╗\n" +
-		"║           Emrys TUI                    ║\n" +
-		"║  Your Personal AI Assistant on macOS  ║\n" +
-		"╚════════════════════════════════════════╝")
+	headerText := "Emrys TUI\nYour Personal AI Assistant on macOS"
+	title := titleStyle.Render(headerText)
 	
 	return title
 }
