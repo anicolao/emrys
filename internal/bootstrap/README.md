@@ -360,8 +360,8 @@ Phase 3 creates a comprehensive voice output system:
 Phase 3 facilitates the installation of the Jamie (Premium) voice:
 
 1. **Voice Detection** - Checks if Jamie voice is available
-2. **AppleScript Automation** - Opens System Settings to the voice download section
-3. **Guided Installation** - Provides step-by-step instructions while System Settings is open
+2. **AppleScript Automation** - Opens VoiceOver Utility to the voice download section
+3. **Guided Installation** - Provides step-by-step instructions while VoiceOver Utility is open
 4. **User Confirmation** - Prompts user to confirm when download is complete
 5. **Verification** - Confirms voice is properly installed
 6. **Testing** - Speaks a confirmation phrase to verify functionality
@@ -431,19 +431,19 @@ Step 3: Installing Jamie voice...
 Checking Jamie voice installation...
 
 ⚠ Jamie voice is not installed on this system
-Opening System Settings to install Jamie voice...
+Opening VoiceOver Utility to install Jamie voice...
 
-Opening System Settings to download Jamie voice...
+Opening VoiceOver Utility to download Jamie voice...
 
-✓ System Settings opened to Accessibility section
+✓ VoiceOver Utility opened
 
-To complete the installation:
-  1. In the opened window, navigate to 'Spoken Content' (if not already there)
-  2. Click on the 'System Voice' dropdown
-  3. Click 'Manage Voices...' or 'Customize...'
-  4. Find 'Jamie' in the list (under English (United Kingdom))
-  5. Click the download icon next to Jamie
-  6. Wait for the download to complete (may take several minutes)
+To install Jamie voice:
+  1. In the VoiceOver Utility window, go to the 'Speech' section
+  2. Click on the 'Voices' tab
+  3. Find 'Jamie' in the voice list (under English (United Kingdom))
+  4. Click the download icon (cloud with down arrow) next to Jamie
+  5. Wait for the download to complete (may take several minutes)
+  6. Once downloaded, you can close the VoiceOver Utility
 
 Have you installed the Jamie voice? (y/n): y
 ✓ Jamie voice is now available
@@ -682,19 +682,18 @@ If model verification fails after download:
 
 #### Jamie voice not found
 
-Phase 3 uses AppleScript to open System Settings for voice installation. If the voice is not available:
+Phase 3 uses AppleScript to open VoiceOver Utility for voice installation. If the voice is not available:
 
-1. **If AppleScript fails to open System Settings**:
-   - Manually open System Settings (or System Preferences on older macOS)
-   - Navigate to Accessibility > Spoken Content
-   - Click on "System Voice" dropdown
-   - Select "Manage Voices..." or "Customize..."
+1. **If AppleScript fails to open VoiceOver Utility**:
+   - Manually open VoiceOver Utility (located in /System/Applications/Utilities/)
+   - Or use Spotlight: Press Cmd+Space and type "VoiceOver Utility"
    
 2. **To download Jamie voice**:
-   - Find "Jamie" in the list (under English (United Kingdom))
-   - Click the download icon next to Jamie
+   - In VoiceOver Utility, go to the 'Speech' section
+   - Click on the 'Voices' tab
+   - Find "Jamie" in the voice list (under English (United Kingdom))
+   - Click the download icon (cloud with down arrow) next to Jamie
    - Wait for download to complete (can be several hundred MB)
-   - Note: This is in the VoiceOver utility section, not softwareupdate
    
 3. **If you can't find Jamie**:
    - Look under "English (United Kingdom)" category
