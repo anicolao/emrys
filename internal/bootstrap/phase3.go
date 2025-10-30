@@ -64,7 +64,7 @@ func UpdateNixDarwinConfigForVoice() error {
 	voiceConfig := `
   # Phase 3: Voice Output Configuration
   # Jamie (Premium) voice installation is facilitated during Phase 3 bootstrap.
-  # AppleScript opens System Settings to the voice download section where users
+  # AppleScript opens VoiceOver Utility to the voice download section where users
   # can download the Jamie voice. The bootstrap process guides users through this.
 `
 
@@ -93,24 +93,24 @@ func InstallJamieVoice() error {
 	// Jamie voice is not installed, install it using AppleScript
 	fmt.Println()
 	fmt.Println("⚠ Jamie voice is not installed on this system")
-	fmt.Println("Opening System Settings to install Jamie voice...")
+	fmt.Println("Opening VoiceOver Utility to install Jamie voice...")
 	fmt.Println()
 
 	// Try to install the voice using AppleScript
 	if err := installVoiceUsingAppleScript(); err != nil {
 		// If AppleScript fails, provide manual instructions
 		fmt.Println()
-		fmt.Printf("⚠ Could not open System Settings automatically: %v\n", err)
+		fmt.Printf("⚠ Could not open VoiceOver Utility automatically: %v\n", err)
 		fmt.Println()
 		fmt.Println("Please install Jamie (Premium) voice manually:")
 		fmt.Println()
 		fmt.Println("To install Jamie voice:")
-		fmt.Println("  1. Open System Settings (or System Preferences)")
-		fmt.Println("  2. Go to Accessibility > Spoken Content")
-		fmt.Println("  3. Click on 'System Voice' dropdown")
-		fmt.Println("  4. Select 'Manage Voices...'")
-		fmt.Println("  5. Find 'Jamie' in the list and click the download icon")
-		fmt.Println("  6. Wait for the download to complete")
+		fmt.Println("  1. Open VoiceOver Utility (in /System/Applications/Utilities/)")
+		fmt.Println("  2. Go to the 'Speech' section")
+		fmt.Println("  3. Click on the 'Voices' tab")
+		fmt.Println("  4. Find 'Jamie' in the voice list (under English (United Kingdom))")
+		fmt.Println("  5. Click the download icon (cloud with down arrow) next to Jamie")
+		fmt.Println("  6. Wait for the download to complete (may take several minutes)")
 		fmt.Println()
 	}
 
