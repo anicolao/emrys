@@ -98,6 +98,33 @@ func main() {
 
 		fmt.Println("✓ Phase 3 bootstrap is complete!")
 		fmt.Println()
+
+		// Check if Phase 4 bootstrap is complete
+		if !bootstrap.IsPhase4Complete() {
+			fmt.Println("⚠ Phase 4 bootstrap is not yet complete.")
+			fmt.Println()
+
+			if !confirm("Would you like to run Phase 4 bootstrap now?") {
+				fmt.Println("Bootstrap cancelled. Run this command again when ready.")
+				return
+			}
+
+			fmt.Println()
+			if err := bootstrap.RunPhase4(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				os.Exit(1)
+			}
+
+			fmt.Println()
+			fmt.Println("Next steps:")
+			fmt.Println("  - Phase 5 will configure tmux session management")
+			fmt.Println("  - Phase 6 will set up auto-start configuration")
+			fmt.Println()
+			return
+		}
+
+		fmt.Println("✓ Phase 4 bootstrap is complete!")
+		fmt.Println()
 		fmt.Println("Emrys is ready to use.")
 		return
 	}
